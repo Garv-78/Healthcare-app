@@ -116,12 +116,12 @@ export default function HomePage() {
                 {t.healthcareDescription}
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <Link href="/login?role=patient">
+                <Link href="/login?role=patient&mode=register">
                   <Button size="lg" className="gap-2">
                     {t.patientCta} <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/login?role=doctor">
+                <Link href="/login?role=doctor&mode=register">
                   <Button size="lg" variant="outline" className="gap-2">
                     {t.doctorCta} <Stethoscope className="h-4 w-4" />
                   </Button>
@@ -170,7 +170,7 @@ export default function HomePage() {
                 </ul>
                 <div className="flex flex-wrap gap-3">
                   <Link href="/consultation/book"><Button>Start a consultation</Button></Link>
-                  <Link href="/login?role=patient"><Button variant="outline">Login / Register</Button></Link>
+                  <Link href="/login?role=patient&mode=register"><Button variant="outline">Login / Register</Button></Link>
                 </div>
               </CardContent>
             </Card>
@@ -190,7 +190,7 @@ export default function HomePage() {
                   <li>E‑prescriptions with QR verification</li>
                   <li>Integrated scheduling and patient records</li>
                 </ul>
-                <Link href="/login?role=doctor"><Button className="gap-2">Doctor Login / Register <ArrowRight className="h-4 w-4" /></Button></Link>
+                <Link href="/login?role=doctor&mode=register"><Button className="gap-2">Doctor Login / Register <ArrowRight className="h-4 w-4" /></Button></Link>
               </CardContent>
             </Card>
           </div>

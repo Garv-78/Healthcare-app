@@ -22,6 +22,7 @@ export default function AuthPage() {
   const [status, setStatus] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
+  const [existingSession, setExistingSession] = useState<any>(null)
 
   // Check if user is already logged in and redirect
   useEffect(() => {
@@ -29,6 +30,25 @@ export default function AuthPage() {
     
     const checkSession = async () => {
       try {
+        // Check if user explicitly wants to access login (force parameter or register mode)
+        const url = new URL(window.location.href)
+        const force = url.searchParams.get("force")
+        const mode = url.searchParams.get("mode")
+        
+        if (force === "true" || mode === "register") {
+          console.log('Force access or register mode - allowing access to login page')
+          
+          // Still check for existing session to show appropriate UI
+          const { data: { session }, error } = await supabase.auth.getSession()
+          if (session?.user && !error) {
+            setExistingSession(session)
+            console.log('Existing session found in register mode:', session.user.email)
+          }
+          
+          setChecking(false)
+          return
+        }
+        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (isMounted) {
@@ -63,13 +83,27 @@ export default function AuthPage() {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, !!session)
+      
+      // Check if user is in register mode - don't redirect existing sessions
+      const url = new URL(window.location.href)
+      const mode = url.searchParams.get("mode")
+      const force = url.searchParams.get("force")
+      
+      if (mode === "register" || force === "true") {
+        console.log('Register mode - not redirecting on auth state change')
+        setChecking(false)
+        return
+      }
+      
       if (isMounted && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
-        // Wait a moment for profile to be created/updated
-        setTimeout(() => {
-          if (isMounted) {
-            router.replace('/')
-          }
-        }, 1000)
+        // Only redirect for new sign-ins/registrations, not when we're showing existing session warning
+        if (event === 'SIGNED_IN' && !existingSession) {
+          setTimeout(() => {
+            if (isMounted) {
+              router.replace('/')
+            }
+          }, 1000)
+        }
       }
       
       // If user signs out while on this page, stop checking
@@ -247,6 +281,36 @@ export default function AuthPage() {
               <CardDescription>{mode === "register" ? "Create your account" : "Enter your credentials"}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Existing session warning */}
+              {existingSession && mode === "register" && (
+                <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="text-yellow-600">⚠️</div>
+                    <div>
+                      <p className="font-medium text-yellow-800">Already signed in as {existingSession.user?.email}</p>
+                      <p className="text-yellow-700">You can continue with this account or sign out to register a new one.</p>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          onClick={() => router.push('/')}
+                          className="text-xs bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded border text-yellow-800"
+                        >
+                          Continue with current account
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await supabase.auth.signOut()
+                            setExistingSession(null)
+                          }}
+                          className="text-xs bg-white hover:bg-gray-50 px-2 py-1 rounded border text-gray-700"
+                        >
+                          Sign out & register new account
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Role selector */}
               <div className="flex gap-2">
                 <button

@@ -29,16 +29,18 @@ export async function middleware(request: NextRequest) {
   // Only check session for auth-specific paths to avoid unnecessary redirects
   if (request.nextUrl.pathname.startsWith('/login')) {
     try {
-      // Check if user is forcing access to login page
+      // Check if user is forcing access to login page or coming from homepage register
       const force = request.nextUrl.searchParams.get('force')
-      if (force === 'true') {
-        console.log('Force access to login page, skipping redirect')
+      const mode = request.nextUrl.searchParams.get('mode')
+      
+      if (force === 'true' || mode === 'register') {
+        console.log('Allowing access to login page (force or register mode)')
         return response
       }
 
       const { data: { session }, error } = await supabase.auth.getSession()
       
-      // Only redirect if we have a confirmed valid session
+      // Only redirect if we have a confirmed valid session and user is not explicitly trying to register
       if (session?.user && !error) {
         console.log('Middleware: Redirecting authenticated user away from login')
         return NextResponse.redirect(new URL('/', request.url))

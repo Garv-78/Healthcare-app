@@ -14,8 +14,9 @@ export function AuthButton() {
     let isMounted = true
     
     // Get initial session
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
       if (isMounted) {
+        console.log("AuthButton: Initial session check", { session: data.session, error })
         setSession(data.session)
         setLoading(false)
       }
@@ -24,6 +25,7 @@ export function AuthButton() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (isMounted) {
+        console.log("AuthButton: Auth state changed", { event, session, userMetadata: session?.user?.user_metadata })
         setSession(session)
         if (event === 'SIGNED_OUT') {
           setSigningOut(false)
@@ -70,9 +72,25 @@ export function AuthButton() {
 
   if (session) {
     const display = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || session.user.phone || "Account"
+    const shortDisplay = display.length > 20 ? display.substring(0, 20) + "..." : display
+    
     return (
-      <div className="flex items-center space-x-2">
-        <span className="text-sm text-muted-foreground hidden md:inline">{display}</span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+            <span className="text-xs font-medium text-primary">
+              {(display.charAt(0) || "U").toUpperCase()}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-foreground">
+              {shortDisplay}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {session.user.email ? "Logged in" : "Connected"}
+            </span>
+          </div>
+        </div>
         <Button size="sm" variant="outline" onClick={handleSignOut} disabled={signingOut} className="bg-transparent">
           {signingOut ? "Signing out..." : "Logout"}
         </Button>
