@@ -2,41 +2,69 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import { forceLogout } from "@/lib/supabase/auth-utils"
 import Link from "next/link"
+import { User, LogOut } from "lucide-react"
+import type { Session } from "@supabase/supabase-js"
 
 export function AuthButton() {
   const [loading, setLoading] = useState(true)
   const [signingOut, setSigningOut] = useState(false)
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const supabase = createSupabaseBrowserClient()
 
   useEffect(() => {
     let isMounted = true
     
-    // Get initial session
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (isMounted) {
-        console.log("AuthButton: Initial session check", { session: data.session, error })
-        setSession(data.session)
+    // Get initial session with better error handling
+    const getInitialSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (isMounted) {
+          if (error) {
+            console.error("Error getting session:", error)
+            setSession(null)
+          } else {
+            setSession(data.session)
+          }
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error("Session check failed:", err)
+        if (isMounted) {
+          setSession(null)
+          setLoading(false)
+        }
+      }
+    }
+    
+    getInitialSession()
+    
+    // Fallback to stop loading after 10 seconds in case of network issues
+    const loadingTimeout = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn("Auth session check timed out, stopping loading state")
         setLoading(false)
       }
-    })
+    }, 10000)
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (isMounted) {
-        console.log("AuthButton: Auth state changed", { event, session, userMetadata: session?.user?.user_metadata })
+        console.log('Auth state change:', event, session ? 'session exists' : 'no session')
         setSession(session)
+        setLoading(false) // Ensure loading is set to false on auth state changes
         if (event === 'SIGNED_OUT') {
           setSigningOut(false)
-          // Redirect to home after sign out
-          window.location.href = '/'
+          setSession(null)
+          // Don't redirect here, let handleSignOut handle it
         }
       }
     })
 
     return () => {
       isMounted = false
+      clearTimeout(loadingTimeout)
       subscription?.unsubscribe()
     }
   }, [supabase.auth])
@@ -44,45 +72,36 @@ export function AuthButton() {
   const handleSignOut = async () => {
     setSigningOut(true)
     try {
-      // Clear session state immediately for better UX
-      setSession(null)
-      
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error("Sign out error:", error)
-        // Restore session if sign out failed
-        const { data } = await supabase.auth.getSession()
-        setSession(data.session)
-        setSigningOut(false)
-        return
-      }
-      
-      // Clear any localStorage items
-      localStorage.removeItem('hc_pending_profile')
-      
-      // The SIGNED_OUT event will handle redirect
+      // Use the utility function for reliable logout
+      await forceLogout()
     } catch (error) {
-      console.error("Sign out error:", error)
+      console.error("Logout failed:", error)
       setSigningOut(false)
+      // Force redirect as absolute fallback to homepage
+      window.location.href = '/'
     }
   }
 
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2" aria-label="Loading authentication status">
+        <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />
+        <div className="w-16 h-4 bg-muted rounded animate-pulse" />
+      </div>
+    )
+  }
 
   if (session) {
-    const display = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || session.user.phone || "Account"
-    const shortDisplay = display.length > 20 ? display.substring(0, 20) + "..." : display
+    const display = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || "User"
+    const shortDisplay = display.length > 15 ? display.substring(0, 15) + "..." : display
     
     return (
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-            <span className="text-xs font-medium text-primary">
-              {(display.charAt(0) || "U").toUpperCase()}
-            </span>
+            <User className="w-4 h-4 text-primary" />
           </div>
-          <div className="flex flex-col">
+          <div className="hidden sm:flex flex-col">
             <span className="text-sm font-medium text-foreground">
               {shortDisplay}
             </span>
@@ -92,7 +111,8 @@ export function AuthButton() {
           </div>
         </div>
         <Button size="sm" variant="outline" onClick={handleSignOut} disabled={signingOut} className="bg-transparent">
-          {signingOut ? "Signing out..." : "Logout"}
+          <LogOut className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">{signingOut ? "Signing out..." : "Logout"}</span>
         </Button>
       </div>
     )

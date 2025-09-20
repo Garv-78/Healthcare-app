@@ -1,205 +1,128 @@
 "use client"
-import { useEffect, useMemo, useState } from "react"
+
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowLeft, Mail, Lock, User, Phone, UserCircle2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { 
+  Mail, 
+  Lock, 
+  User, 
+  Phone, 
+  Stethoscope, 
+  UserCircle2, 
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  ChevronDown
+} from "lucide-react"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import { getPostLoginRedirect } from "@/lib/supabase/profile-utils"
+import { useLanguage } from "@/components/language-provider"
 
 type Role = "patient" | "doctor"
 
 export default function AuthPage() {
-  const supabase = createSupabaseBrowserClient()
   const router = useRouter()
-  const [mode, setMode] = useState<"login" | "register">("register")
+  const supabase = createSupabaseBrowserClient()
+  const { t } = useLanguage()
+  
   const [role, setRole] = useState<Role>("patient")
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [status, setStatus] = useState<string | null>(null)
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [checking, setChecking] = useState(true)
-  const [existingSession, setExistingSession] = useState<any>(null)
+  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
-  // Check if user is already logged in and redirect
+  // Redirect if already logged in
   useEffect(() => {
-    let isMounted = true
-    
     const checkSession = async () => {
-      try {
-        // Check if user explicitly wants to access login (force parameter or register mode)
-        const url = new URL(window.location.href)
-        const force = url.searchParams.get("force")
-        const mode = url.searchParams.get("mode")
-        
-        if (force === "true" || mode === "register") {
-          console.log('Force access or register mode - allowing access to login page')
-          
-          // Still check for existing session to show appropriate UI
-          const { data: { session }, error } = await supabase.auth.getSession()
-          if (session?.user && !error) {
-            setExistingSession(session)
-            console.log('Existing session found in register mode:', session.user.email)
-          }
-          
-          setChecking(false)
-          return
-        }
-        
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (isMounted) {
-          if (error) {
-            console.log('Session check error:', error)
-            // If there's an error, assume no session and show login
-            setChecking(false)
-            return
-          }
-          
-          if (session?.user) {
-            console.log('Found existing session, redirecting...')
-            // User is already logged in, redirect to home
-            router.replace('/')
-            return
-          }
-          
-          console.log('No session found, showing login form')
-          // No session, safe to show login page
-          setChecking(false)
-        }
-      } catch (error) {
-        console.error('Session check error:', error)
-        if (isMounted) {
-          setChecking(false)
-        }
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        // Use the profile utility to determine appropriate redirect
+        const redirectUrl = await getPostLoginRedirect(session.user.id)
+        router.push(redirectUrl)
       }
     }
-    
     checkSession()
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, !!session)
-      
-      // Check if user is in register mode - don't redirect existing sessions
-      const url = new URL(window.location.href)
-      const mode = url.searchParams.get("mode")
-      const force = url.searchParams.get("force")
-      
-      if (mode === "register" || force === "true") {
-        console.log('Register mode - not redirecting on auth state change')
-        setChecking(false)
-        return
-      }
-      
-      if (isMounted && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
-        // Only redirect for new sign-ins/registrations, not when we're showing existing session warning
-        if (event === 'SIGNED_IN' && !existingSession) {
-          setTimeout(() => {
-            if (isMounted) {
-              router.replace('/')
-            }
-          }, 1000)
-        }
-      }
-      
-      // If user signs out while on this page, stop checking
-      if (event === 'SIGNED_OUT') {
-        setChecking(false)
-      }
-    })
-
-    return () => {
-      isMounted = false
-      subscription?.unsubscribe()
-    }
   }, [supabase.auth, router])
 
-  // Preselect role from query (?role=doctor)
-  useEffect(() => {
-    const url = new URL(window.location.href)
-    const r = url.searchParams.get("role") as Role | null
-    if (r === "doctor" || r === "patient") setRole(r)
-    const m = url.searchParams.get("mode") as "login" | "register" | null
-    if (m) setMode(m)
-    
-    // Check if user explicitly wants to access login (force parameter)
-    const force = url.searchParams.get("force")
-    if (force === "true") {
-      console.log('Force access to login page requested')
-      setChecking(false)
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      setStatus({ type: "error", message: "Passwords do not match" })
+      return
     }
-  }, [])
 
-  // ALWAYS call useMemo before any conditional returns - React Rules of Hooks
-  const canSubmit = useMemo(() => {
-    if (mode === "register") return !!(name && phone && email && password)
-    return !!(email && password)
-  }, [mode, name, phone, email, password])
-
-  // Show loading while checking session (unless forced)
-  if (checking) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Checking authentication...</p>
-        </div>
-      </div>
-    )
-  }
-
-  const handleRegister = async () => {
     try {
       setLoading(true)
       setStatus(null)
-      const { data, error: signUpErr } = await supabase.auth.signUp({ email, password })
+      
+      const { data, error: signUpErr } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            name,
+            phone,
+            role,
+            language: "en"
+          }
+        }
+      })
+      
       if (signUpErr) throw signUpErr
       
-      const session = data.session
-      const payload = { name, language: "en", role, phone }
-      
-      if (session) {
-        // session present -> upsert profile now
-        await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        setStatus("Registered and signed in! Redirecting...")
-        // Don't manually redirect, let the auth state listener handle it
+      if (data.session) {
+        // User is immediately signed in
+        await fetch("/api/profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, phone, role, language: "en" })
+        })
+        setStatus({ type: "success", message: "Account created successfully!" })
+        // New users always go to profile to complete setup
+        setTimeout(() => router.push("/profile"), 1500)
       } else {
-        // likely email confirmation required; save pending profile to apply post-verification
-        localStorage.setItem("hc_pending_profile", JSON.stringify(payload))
-        setStatus("Registered. Please check your email to verify your account.")
-        setLoading(false)
+        setStatus({ type: "success", message: "Please check your email to verify your account." })
       }
     } catch (e: any) {
-      setStatus(e?.message || "Registration failed")
+      setStatus({ type: "error", message: e?.message || "Registration failed" })
+    } finally {
       setLoading(false)
     }
   }
 
-  const handleLogin = async () => {
+  const handleSignIn = async () => {
     try {
       setLoading(true)
       setStatus(null)
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       
-      setStatus("Logged in successfully! Redirecting...")
+      setStatus({ type: "success", message: "Signed in successfully!" })
       
-      // Apply any pending profile data (if user just verified)
-      const pending = localStorage.getItem("hc_pending_profile")
-      if (pending) {
-        try {
-          await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: pending })
-          localStorage.removeItem("hc_pending_profile")
-        } catch {}
+      // Determine redirect based on profile status
+      if (data.user) {
+        const redirectUrl = await getPostLoginRedirect(data.user.id)
+        setTimeout(() => router.push(redirectUrl), 1000)
+      } else {
+        setTimeout(() => router.push("/profile"), 1000)
       }
-      
-      // Don't manually redirect, let the auth state listener handle it
     } catch (e: any) {
-      setStatus(e?.message || "Login failed")
+      setStatus({ type: "error", message: e?.message || "Sign in failed" })
+    } finally {
       setLoading(false)
     }
   }
@@ -209,188 +132,339 @@ export default function AuthPage() {
       setLoading(true)
       setStatus(null)
       
-      // Store selected role for after OAuth callback
-      localStorage.setItem("hc_selected_role", role)
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?role=${role}`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         }
       })
       
       if (error) throw error
     } catch (e: any) {
-      setStatus(e?.message || "Google sign in failed")
+      setStatus({ type: "error", message: e?.message || "Google sign-in failed" })
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header */}
+      <header className="border-b border-border/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
-                </Button>
-              </Link>
-              <h1 className="text-xl font-bold">{mode === "register" ? "Register" : "Login"}</h1>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              <span>Already logged in? </span>
-              <Link href="/" className="underline hover:no-underline">Go to homepage</Link>
-              <span> or </span>
-              <button 
-                onClick={async () => {
-                  await supabase.auth.signOut()
-                  setChecking(false)
-                }}
-                className="underline hover:no-underline"
-              >
-                Sign out first
-              </button>
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+              </Button>
+            </Link>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Stethoscope className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <h1 className="text-lg font-semibold">HealthConnect</h1>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12">
         <div className="mx-auto max-w-md">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Welcome to HealthConnect</CardTitle>
-                <div className="flex gap-1 rounded-lg border p-1 text-xs">
-                  <button
-                    className={`rounded-md px-3 py-1 ${mode === "register" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-                    onClick={() => setMode("register")}
-                  >
-                    Register
-                  </button>
-                  <button
-                    className={`rounded-md px-3 py-1 ${mode === "login" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-                    onClick={() => setMode("login")}
-                  >
-                    Login
-                  </button>
-                </div>
+          <Card className="border-0 shadow-xl">
+            <CardHeader className="space-y-4 text-center">
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <Stethoscope className="w-6 h-6 text-primary" />
               </div>
-              <CardDescription>{mode === "register" ? "Create your account" : "Enter your credentials"}</CardDescription>
+              <CardTitle className="text-2xl">Welcome to HealthConnect</CardTitle>
+              <CardDescription>
+                Join our telemedicine platform serving rural communities
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Existing session warning */}
-              {existingSession && mode === "register" && (
-                <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="text-yellow-600">⚠️</div>
-                    <div>
-                      <p className="font-medium text-yellow-800">Already signed in as {existingSession.user?.email}</p>
-                      <p className="text-yellow-700">You can continue with this account or sign out to register a new one.</p>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          onClick={() => router.push('/')}
-                          className="text-xs bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded border text-yellow-800"
-                        >
-                          Continue with current account
-                        </button>
-                        <button
-                          onClick={async () => {
-                            await supabase.auth.signOut()
-                            setExistingSession(null)
-                          }}
-                          className="text-xs bg-white hover:bg-gray-50 px-2 py-1 rounded border text-gray-700"
-                        >
-                          Sign out & register new account
-                        </button>
+            
+            <CardContent className="space-y-6">
+              {/* Role Selection */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">I am a</Label>
+                <Select value={role} onValueChange={(value: Role) => setRole(value)}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Select your role">
+                      <div className="flex items-center gap-2">
+                        {role === "patient" ? (
+                          <>
+                            <UserCircle2 className="h-4 w-4" />
+                            <span>Patient</span>
+                          </>
+                        ) : (
+                          <>
+                            <Stethoscope className="h-4 w-4" />
+                            <span>Doctor</span>
+                          </>
+                        )}
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="patient">
+                      <div className="flex items-center gap-2">
+                        <UserCircle2 className="h-4 w-4" />
+                        <span>Patient</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="doctor">
+                      <div className="flex items-center gap-2">
+                        <Stethoscope className="h-4 w-4" />
+                        <span>Doctor</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Tabs defaultValue="signup" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="signup" className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="name"
+                          placeholder="Enter your full name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="pl-10"
+                        />
                       </div>
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="phone"
+                          placeholder="+91 98765 43210"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Create a strong password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="confirmPassword"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <Button 
+                      className="w-full h-12" 
+                      onClick={handleSignUp}
+                      disabled={loading || !name || !phone || !email || !password || !confirmPassword}
+                    >
+                      {loading ? "Creating Account..." : "Create Account"}
+                    </Button>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <Separator className="w-full" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                      </div>
+                    </div>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-12"
+                      onClick={handleGoogleAuth}
+                      disabled={loading}
+                    >
+                      <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                        <path
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                          fill="#4285F4"
+                        />
+                        <path
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                          fill="#34A853"
+                        />
+                        <path
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                          fill="#FBBC05"
+                        />
+                        <path
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                          fill="#EA4335"
+                        />
+                      </svg>
+                      Continue with Google
+                    </Button>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="signin" className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <Button 
+                      className="w-full h-12" 
+                      onClick={handleSignIn}
+                      disabled={loading || !email || !password}
+                    >
+                      {loading ? "Signing In..." : "Sign In"}
+                    </Button>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <Separator className="w-full" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                      </div>
+                    </div>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-12"
+                      onClick={handleGoogleAuth}
+                      disabled={loading}
+                    >
+                      <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                        <path
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                          fill="#4285F4"
+                        />
+                        <path
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                          fill="#34A853"
+                        />
+                        <path
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                          fill="#FBBC05"
+                        />
+                        <path
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                          fill="#EA4335"
+                        />
+                      </svg>
+                      Continue with Google
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              {status && (
+                <div className={`p-3 rounded-lg flex items-center gap-2 ${
+                  status.type === "success" 
+                    ? "bg-green-50 text-green-700 border border-green-200" 
+                    : "bg-red-50 text-red-700 border border-red-200"
+                }`}>
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="text-sm">{status.message}</span>
                 </div>
               )}
-              
-              {/* Role selector */}
-              <div className="flex gap-2">
-                <button
-                  className={`flex-1 rounded-md border px-3 py-2 text-sm ${role === "patient" ? "border-primary bg-primary/10" : ""}`}
-                  onClick={() => setRole("patient")}
-                >
-                  <UserCircle2 className="mr-2 inline h-4 w-4" /> Patient
-                </button>
-                <button
-                  className={`flex-1 rounded-md border px-3 py-2 text-sm ${role === "doctor" ? "border-secondary bg-secondary/10" : ""}`}
-                  onClick={() => setRole("doctor")}
-                >
-                  <User className="mr-2 inline h-4 w-4" /> Doctor
-                </button>
-              </div>
 
-              {mode === "register" && (
-                <div className="space-y-3">
-                  <label className="block text-sm">Full name</label>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
-                  </div>
-                  <label className="mt-2 block text-sm">Phone</label>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., +919876543210" />
-                  </div>
-                </div>
-              )}
+              <Separator />
 
-              <div className="space-y-3">
-                <label className="block text-sm">Email</label>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-                </div>
-                <label className="mt-2 block text-sm">Password</label>
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-                </div>
-              </div>
-
-              {status && <p className="text-sm text-muted-foreground">{status}</p>}
-
-              <div className="pt-2 space-y-3">
-                {mode === "register" ? (
-                  <Button className="w-full" disabled={!canSubmit || loading} onClick={handleRegister}>
-                    Create account
-                  </Button>
-                ) : (
-                  <Button className="w-full" disabled={!canSubmit || loading} onClick={handleLogin}>
-                    Login
-                  </Button>
-                )}
-                
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
-                  disabled={loading} 
-                  onClick={handleGoogleAuth}
-                >
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Continue with Google
-                </Button>
+              <div className="text-center text-sm text-muted-foreground">
+                By continuing, you agree to our{" "}
+                <Link href="#" className="text-primary hover:underline">Terms of Service</Link>
+                {" "}and{" "}
+                <Link href="#" className="text-primary hover:underline">Privacy Policy</Link>
               </div>
             </CardContent>
           </Card>

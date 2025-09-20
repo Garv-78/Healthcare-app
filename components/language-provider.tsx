@@ -14,13 +14,26 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en")
 
   useEffect(() => {
-    const saved = (typeof window !== "undefined" && window.localStorage.getItem("hc_lang")) as Language | null
-    if (saved) setLanguageState(saved)
+    try {
+      const saved = (typeof window !== "undefined" && window.localStorage.getItem("hc_lang")) as Language | null
+      if (saved && ["en", "hi", "pa", "bn", "te", "ta", "ml", "kn", "gu", "mr", "or", "as", "ur"].includes(saved)) {
+        setLanguageState(saved)
+      }
+    } catch (error) {
+      console.warn("Could not load saved language preference:", error)
+      setLanguageState("en")
+    }
   }, [])
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
-    try { window.localStorage.setItem("hc_lang", lang) } catch {}
+    try { 
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("hc_lang", lang) 
+      }
+    } catch (error) {
+      console.warn("Could not save language preference:", error)
+    }
   }
 
   const t = useMemo(() => getMergedTranslations(language), [language])

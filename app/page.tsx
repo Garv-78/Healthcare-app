@@ -28,6 +28,9 @@ import { LanguageSelector } from "@/components/language-selector"
 import { AuthButton } from "@/components/auth/auth-button"
 import { useTheme } from "next-themes"
 import { useLanguage } from "@/components/language-provider"
+import GradualBlur from "@/components/ui/gradual-blur"
+import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import type { Session } from "@supabase/supabase-js"
 
 export default function HomePage() {
   const router = useRouter()
@@ -35,6 +38,9 @@ export default function HomePage() {
   const [isPlaying, setIsPlaying] = useState(true)
   const { theme, setTheme } = useTheme()
   const { t } = useLanguage()
+  const supabase = createSupabaseBrowserClient()
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const routes = [
@@ -50,6 +56,46 @@ export default function HomePage() {
       try { router.prefetch(r) } catch {}
     })
   }, [router])
+
+  // Check authentication state with improved error handling
+  useEffect(() => {
+    let isMounted = true
+    
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (isMounted) {
+          if (error) {
+            console.error("Error getting session on homepage:", error)
+            setSession(null)
+          } else {
+            setSession(session)
+          }
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error("Homepage session check failed:", err)
+        if (isMounted) {
+          setSession(null)
+          setLoading(false)
+        }
+      }
+    }
+    
+    checkSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (isMounted) {
+        setSession(session)
+        setLoading(false)
+      }
+    })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase.auth])
 
   const togglePlayback = async () => {
     const el = videoRef.current
@@ -102,8 +148,8 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="container mx-auto px-4 py-14 md:py-20">
+      <section className="relative overflow-hidden">        
+        <div className="container mx-auto px-4 py-14 md:py-20 relative z-10">
           <div className="grid items-center gap-10 md:grid-cols-2">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground mb-4">
@@ -116,16 +162,33 @@ export default function HomePage() {
                 {t.healthcareDescription}
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <Link href="/login?role=patient&mode=register">
-                  <Button size="lg" className="gap-2">
-                    {t.patientCta} <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/login?role=doctor&mode=register">
-                  <Button size="lg" variant="outline" className="gap-2">
-                    {t.doctorCta} <Stethoscope className="h-4 w-4" />
-                  </Button>
-                </Link>
+                {session ? (
+                  <>
+                    <Link href="/profile">
+                      <Button size="lg" className="gap-2">
+                        View Profile <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/consultation/book">
+                      <Button size="lg" variant="outline" className="gap-2">
+                        Book Consultation <Stethoscope className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login">
+                      <Button size="lg" className="gap-2">
+                        {t.patientCta} <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/login">
+                      <Button size="lg" variant="outline" className="gap-2">
+                        {t.doctorCta} <Stethoscope className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> 173 {t.villagesServed}</div>
@@ -136,11 +199,12 @@ export default function HomePage() {
             <div className="relative">
               <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] rounded-xl border bg-card/50 p-0 shadow-sm overflow-hidden">
                 <video ref={videoRef} className="h-full w-full object-cover" src="/promo.mp4" playsInline muted loop autoPlay />
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                  <Button size="sm" variant="secondary" onClick={togglePlayback} className="backdrop-blur bg-background/70">
+                
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between z-20">
+                  <Button size="sm" variant="secondary" onClick={togglePlayback} className="backdrop-blur bg-background/80">
                     {isPlaying ? t.videoPause : t.videoPlay}
                   </Button>
-                  <div className="rounded-full bg-background/70 px-2 py-1 text-xs text-muted-foreground">{t.videoDemoLabel}</div>
+                  <div className="rounded-full bg-background/80 px-2 py-1 text-xs text-muted-foreground">{t.videoDemoLabel}</div>
                 </div>
               </div>
             </div>
@@ -170,7 +234,7 @@ export default function HomePage() {
                 </ul>
                 <div className="flex flex-wrap gap-3">
                   <Link href="/consultation/book"><Button>Start a consultation</Button></Link>
-                  <Link href="/login?role=patient&mode=register"><Button variant="outline">Login / Register</Button></Link>
+                  <Link href="/login"><Button variant="outline">Login / Register</Button></Link>
                 </div>
               </CardContent>
             </Card>
@@ -190,7 +254,7 @@ export default function HomePage() {
                   <li>E‑prescriptions with QR verification</li>
                   <li>Integrated scheduling and patient records</li>
                 </ul>
-                <Link href="/login?role=doctor&mode=register"><Button className="gap-2">Doctor Login / Register <ArrowRight className="h-4 w-4" /></Button></Link>
+                <Link href="/login"><Button className="gap-2">Doctor Login / Register <ArrowRight className="h-4 w-4" /></Button></Link>
               </CardContent>
             </Card>
           </div>
@@ -198,8 +262,8 @@ export default function HomePage() {
       </section>
 
       {/* Main Services Grid */}
-      <section id="features" className="py-8 px-4">
-        <div className="container mx-auto">
+      <section id="features" className="py-8 px-4 relative">        
+        <div className="container mx-auto relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Video Consultation */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -350,8 +414,8 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="px-4 py-12">
-        <div className="container mx-auto">
+      <section className="px-4 py-12 relative">        
+        <div className="container mx-auto relative z-10">
           <h3 className="mb-8 text-center text-2xl font-bold">What people say</h3>
           <div className="grid gap-6 md:grid-cols-3">
             <Card>
@@ -414,8 +478,8 @@ export default function HomePage() {
               <CardContent className="pt-6">
                 <p className="text-sm text-muted-foreground">Need help getting started? Our team can assist clinics and local health workers to onboard to HealthConnect.</p>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Link href="/login?role=patient"><Button>Patient Login</Button></Link>
-                  <Link href="/login?role=doctor"><Button variant="outline">Doctor Login</Button></Link>
+                  <Link href="/login"><Button>Patient Login</Button></Link>
+                  <Link href="/login"><Button variant="outline">Doctor Login</Button></Link>
                 </div>
               </CardContent>
             </Card>
@@ -424,8 +488,8 @@ export default function HomePage() {
       </section>
 
       {/* Emergency Contact */}
-      <section className="py-8 px-4">
-        <div className="container mx-auto">
+      <section className="py-8 px-4 relative">        
+        <div className="container mx-auto relative z-10">
           <Card className="bg-destructive/5 border-destructive/20">
             <CardContent className="pt-6">
               <div className="text-center">
@@ -439,6 +503,17 @@ export default function HomePage() {
           </Card>
         </div>
       </section>
+
+      {/* Bottom fade effect for elegant scroll transition */}
+      <div className="relative">
+        <GradualBlur 
+          strength={1.5} 
+          height="10rem" 
+          position="bottom"
+          curve="ease-out"
+          opacity={0.6}
+        />
+      </div>
 
       {/* Footer */}
       <footer className="border-t border-border bg-card px-4 py-10">
@@ -465,8 +540,8 @@ export default function HomePage() {
             <div>
               <h4 className="mb-3 text-sm font-semibold">For you</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/login?role=patient" className="hover:text-foreground">Patient Login</Link></li>
-                <li><Link href="/login?role=doctor" className="hover:text-foreground">Doctor Login</Link></li>
+                <li><Link href="/login" className="hover:text-foreground">Patient Login</Link></li>
+                <li><Link href="/login" className="hover:text-foreground">Doctor Login</Link></li>
                 <li><Link href="/symptoms" className="hover:text-foreground">Symptom Checker</Link></li>
               </ul>
             </div>
