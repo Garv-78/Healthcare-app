@@ -7,6 +7,7 @@ import { RouteTransition } from '@/components/route-transition'
 import { ThemeProvider } from '@/components/theme-provider'
 import { LanguageProvider } from '@/components/language-provider'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -28,6 +29,7 @@ export default function RootLayout({
               <RouteTransition>
                 {children}
               </RouteTransition>
+              <Toaster />
               <Analytics />
             </LanguageProvider>
           </ThemeProvider>

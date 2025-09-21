@@ -26,3 +26,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# markdown files (except README.md)
+*.md
+!README.md
+
+3b9093df-df8b-4eb2-8ee5-d3fce754197f.mp4
+CLI_USAGE.md
+LOGOUT_FIX_DOCUMENTATION.md
+3b9093df-df8b-4eb2-8ee5-d3fce754197f

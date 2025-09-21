@@ -46,8 +46,12 @@ export async function testLogout() {
   }, 1000)
 }
 
-// Add to window for debugging in browser console
-if (typeof window !== 'undefined') {
+// Add to window for debugging in browser console (development mode only)
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).testSessionStatus = testSessionStatus;
   (window as any).testLogout = testLogout;
+  console.log('Debug utilities loaded:', {
+    testSessionStatus: 'Available as window.testSessionStatus()',
+    testLogout: 'Available as window.testLogout()'
+  })
 }

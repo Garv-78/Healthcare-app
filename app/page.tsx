@@ -29,8 +29,10 @@ import { AuthButton } from "@/components/auth/auth-button"
 import { useTheme } from "next-themes"
 import { useLanguage } from "@/components/language-provider"
 import GradualBlur from "@/components/ui/gradual-blur"
+import { Footer } from "@/components/ui/footer-section"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Session } from "@supabase/supabase-js"
+import { TextEffect } from "@/components/ui/text-effect"
 
 export default function HomePage() {
   const router = useRouter()
@@ -155,12 +157,22 @@ export default function HomePage() {
               <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground mb-4">
                 <Shield className="h-3.5 w-3.5 text-primary" /> {t.heroSecureTagline}
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground text-balance">
+              <TextEffect
+                per="word"
+                preset="slide"
+                className="text-4xl md:text-5xl font-bold tracking-tight text-foreground text-balance"
+                delay={0.2}
+              >
                 {t.healthcareAtFingerTips}
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground max-w-xl">
+              </TextEffect>
+              <TextEffect
+                per="char"
+                preset="fade"
+                className="mt-4 text-lg text-muted-foreground max-w-xl"
+                delay={1}
+              >
                 {t.healthcareDescription}
-              </p>
+              </TextEffect>
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 {session ? (
                   <>
@@ -516,49 +528,7 @@ export default function HomePage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card px-4 py-10">
-        <div className="container mx-auto">
-          <div className="grid gap-8 md:grid-cols-4">
-            <div>
-              <div className="mb-2 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                  <Phone className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-semibold">HealthConnect</span>
-              </div>
-              <p className="text-sm text-muted-foreground">Bridging healthcare gaps in rural Punjab with secure telemedicine.</p>
-            </div>
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#features" className="hover:text-foreground">Features</a></li>
-                <li><Link href="/consultation/book" className="hover:text-foreground">Consultation</Link></li>
-                <li><Link href="/records" className="hover:text-foreground">Health Records</Link></li>
-                <li><Link href="/pharmacy" className="hover:text-foreground">Pharmacy</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">For you</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/login" className="hover:text-foreground">Patient Login</Link></li>
-                <li><Link href="/login" className="hover:text-foreground">Doctor Login</Link></li>
-                <li><Link href="/symptoms" className="hover:text-foreground">Symptom Checker</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">Support</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#how-it-works" className="hover:text-foreground">How it works</a></li>
-                <li><a href="#patients" className="hover:text-foreground">Getting started</a></li>
-                <li><a href="#" className="hover:text-foreground">Contact</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 text-center text-xs text-muted-foreground">
-            Supported by Government of Punjab, Department of Higher Education
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

@@ -9,6 +9,7 @@ export async function clearUserSession() {
     
     if (error) {
       console.error('Supabase signOut error:', error)
+      throw new Error(`Supabase sign out failed: ${error.message}`)
     }
     
     // Clear all local storage items related to Supabase
@@ -29,27 +30,42 @@ export async function clearUserSession() {
       console.warn('Could not clear sessionStorage:', storageError)
     }
     
-    return true
+    return { success: true }
   } catch (error) {
     console.error('Session clear error:', error)
-    return false
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
-export async function forceLogout() {
+export async function forceLogout(showToast: boolean = true): Promise<{ success: boolean; error?: string }> {
   try {
-    // Call server-side logout API
-    await fetch('/api/auth/logout', {
+    // Call server-side logout API first
+    const apiResponse = await fetch('/api/auth/logout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })
+
+    if (!apiResponse.ok) {
+      console.warn('Server logout API failed with status:', apiResponse.status)
+    }
   } catch (apiError) {
     console.warn('Server logout API failed:', apiError)
+    // Continue with client-side logout even if server-side fails
   }
   
   // Clear client-side session
-  await clearUserSession()
+  const sessionResult = await clearUserSession()
   
-  // Force redirect to homepage instead of login
+  if (!sessionResult.success) {
+    console.error('Failed to clear user session:', sessionResult.error)
+    return { success: false, error: sessionResult.error }
+  }
+
+  // Add a small delay to ensure all cleanup is complete
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  // Force redirect to homepage
   window.location.href = '/'
+  
+  return { success: true }
 }

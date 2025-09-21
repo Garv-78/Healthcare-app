@@ -20,55 +20,89 @@ export default function PatientProfile() {
     const load = async () => {
       setLoading(true)
       try {
-        const { data: userRes } = await supabase.auth.getUser()
-        const uid = userRes.user?.id
-        if (!uid) return
+        const { data: userRes, error: userError } = await supabase.auth.getUser()
+        if (userError) {
+          console.error("Error getting user:", userError)
+          setStatus("Failed to load user information")
+          return
+        }
         
-        const { data: profile } = await supabase
+        const uid = userRes.user?.id
+        if (!uid) {
+          setStatus("No user found. Please log in.")
+          return
+        }
+        
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", uid)
           .single()
         
-        if (profile) {
+        if (profileError) {
+          if (profileError.code === 'PGRST116') {
+            // No profile found, this is fine for new users
+            console.log("No existing profile found, user can create one")
+          } else {
+            console.error("Error loading profile:", profileError)
+            setStatus("Failed to load profile information")
+          }
+        } else if (profile) {
           setName(profile.name || "")
           setPhone(profile.phone || "")
           setLanguage(profile.language || "en")
           setAddress(profile.address || "")
         }
       } catch (error) {
-        console.error("Error loading profile:", error)
+        console.error("Unexpected error loading profile:", error)
+        setStatus("An unexpected error occurred while loading your profile")
       } finally {
         setLoading(false)
       }
     }
     load()
-  }, [])
+  }, [supabase])
 
   const save = async () => {
+    if (saving) return // Prevent multiple simultaneous save operations
+    
     setSaving(true)
     setStatus(null)
+    
     try {
-      const { data: userRes } = await supabase.auth.getUser()
+      const { data: userRes, error: userError } = await supabase.auth.getUser()
+      if (userError) {
+        throw new Error(`Authentication error: ${userError.message}`)
+      }
+      
       const uid = userRes.user?.id
-      if (!uid) return
+      if (!uid) {
+        throw new Error("No user ID found. Please log in again.")
+      }
 
       const { error } = await supabase
         .from("profiles")
         .upsert({
           id: uid,
-          name,
-          phone,
+          name: name.trim(),
+          phone: phone.trim(),
           language,
-          address,
+          address: address.trim(),
           role: "patient"
         })
 
-      if (error) throw error
+      if (error) {
+        throw new Error(`Database error: ${error.message}`)
+      }
+      
       setStatus("Profile saved successfully!")
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setStatus(null), 3000)
     } catch (error) {
       console.error("Error saving profile:", error)
-      setStatus("Failed to save profile")
+      const errorMessage = error instanceof Error ? error.message : "Failed to save profile"
+      setStatus(errorMessage)
     } finally {
       setSaving(false)
     }

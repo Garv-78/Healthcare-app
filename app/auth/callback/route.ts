@@ -8,19 +8,19 @@ export async function GET(request: NextRequest) {
   const role = requestUrl.searchParams.get('role') || 'patient'
 
   if (code) {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) {
+          async get(name: string) {
             return cookieStore.get(name)?.value
           },
-          set(name: string, value: string, options: any) {
+          async set(name: string, value: string, options: any) {
             cookieStore.set({ name, value, ...options })
           },
-          remove(name: string, options: any) {
+          async remove(name: string, options: any) {
             cookieStore.delete({ name, ...options })
           },
         },
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         
         // Call our profile API to create/update the profile
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin
-        await fetch(`${baseUrl}/api/profile`, {
+        const profileResponse = await fetch(`${baseUrl}/api/profile`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -50,6 +50,24 @@ export async function GET(request: NextRequest) {
           },
           body: JSON.stringify(profileData)
         })
+
+        if (!profileResponse.ok) {
+          console.error('Profile API call failed:', {
+            status: profileResponse.status,
+            statusText: profileResponse.statusText,
+            url: `${baseUrl}/api/profile`
+          })
+          
+          // Try to log response body if available
+          try {
+            const errorText = await profileResponse.text()
+            console.error('Profile API error response:', errorText)
+          } catch (responseError) {
+            console.error('Could not read error response:', responseError)
+          }
+        } else {
+          console.log('Profile created/updated successfully')
+        }
         
         // Redirect to home page - let the app handle role-based routing from there
         return NextResponse.redirect(`${requestUrl.origin}/`)

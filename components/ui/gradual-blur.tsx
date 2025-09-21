@@ -19,7 +19,7 @@ export default function GradualBlur({
   opacity = 0.8,
   className
 }: GradualBlurProps) {
-  const gradientDirection = position === "top" ? "to-b" : "to-t"
+  const gradientDirection = position === "top" ? "to bottom" : "to top"
   const blurValue = `${strength * 10}px`
   
   return (

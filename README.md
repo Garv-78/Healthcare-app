@@ -152,24 +152,7 @@ Maps:         Leaflet for location services
 - **Quality Assurance** - Continuous monitoring and improvement protocols
 - **Medical Ethics** - Strict adherence to medical ethics and patient rights
 
-### Certifications (Planned)
-- ISO 27001 (Information Security Management)
-- NABH (National Accreditation Board for Hospitals)
-- HIPAA Compliance (for international standards)
 
-## 🤝 Community & Collaboration
-
-### Stakeholders
-- **Nabha Civil Hospital** - Primary healthcare partner
-- **Community Health Workers** - Ground-level implementation support
-- **Local Pharmacies** - Medicine availability and distribution
-- **Technology Partners** - Infrastructure and platform support
-
-### Open Source Commitment
-While the core platform is proprietary, we contribute to:
-- Healthcare interoperability standards
-- Rural healthcare technology research  
-- Open-source medical education resources
 
 ---
 

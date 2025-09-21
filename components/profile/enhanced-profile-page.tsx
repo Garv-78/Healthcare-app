@@ -23,8 +23,11 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ImagePlus, ArrowLeft, User, MapPin, Phone, Mail, Building, Github, Linkedin } from "lucide-react"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import { checkOnboardingStatus, completeOnboarding } from "@/lib/supabase/onboarding-utils"
+import { OnboardingForm } from "@/components/onboarding/onboarding-form"
 import type { Session } from "@supabase/supabase-js"
 import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
 
 interface ProfileData {
   id?: string
@@ -46,11 +49,13 @@ interface ProfileData {
 export default function EnhancedProfilePage() {
   const router = useRouter()
   const supabase = createSupabaseBrowserClient()
+  const { toast } = useToast()
   const id = useId()
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     role: "patient",
@@ -83,7 +88,7 @@ export default function EnhancedProfilePage() {
 
   const profileImage = previewUrl || profileData.avatar_url || "/placeholder-user.jpg"
 
-  // Load profile data
+  // Load profile data and check onboarding status
   useEffect(() => {
     const loadProfile = async () => {
       setLoading(true)
@@ -92,6 +97,16 @@ export default function EnhancedProfilePage() {
         setSession(session)
         
         if (session?.user?.id) {
+          // Check onboarding status first
+          const onboardingStatus = await checkOnboardingStatus(session.user)
+          
+          if (onboardingStatus.isFirstTime && !onboardingStatus.hasProfile) {
+            // First-time user - show onboarding form
+            setShowOnboarding(true)
+            setLoading(false)
+            return
+          }
+
           const { data: profile, error } = await supabase
             .from("profiles")
             .select("*")
@@ -118,10 +133,15 @@ export default function EnhancedProfilePage() {
             }
             setProfileData(loadedData)
             setAboutValue(loadedData.about)
-            // Existing user - show profile view, not editing mode
-            setIsEditing(false)
+            
+            // Check if user needs to complete onboarding
+            if (!onboardingStatus.onboardingCompleted) {
+              setIsEditing(true) // Show in editing mode for completion
+            } else {
+              setIsEditing(false) // Show profile view
+            }
           } else if (session?.user) {
-            // New user - no profile exists, prompt to complete profile
+            // User has session but no profile - show editing mode
             setIsEditing(true)
             const initialData: ProfileData = {
               name: session.user.user_metadata?.full_name || "",
@@ -157,30 +177,109 @@ export default function EnhancedProfilePage() {
   }
 
   const handleSave = async () => {
+    // Validation before saving
+    if (!profileData.name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Name is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!profileData.email.trim()) {
+      toast({
+        title: "Validation Error", 
+        description: "Email is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(profileData.email)) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      })
+      return
+    }
+
     setSaving(true)
     try {
-      if (!session?.user?.id) return
-
-      const updatedData = {
-        ...profileData,
-        about: aboutText,
-        avatar_url: previewUrl || profileData.avatar_url,
+      if (!session?.user?.id) {
+        throw new Error("User session not found")
       }
 
-      const { error } = await supabase
+      // Create clean data object with only the fields we're sure exist
+      const updateData = {
+        id: session.user.id,
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone || '',
+        role: profileData.role,
+        address: profileData.address || '',
+        company: profileData.company || '',
+        portfolio: profileData.portfolio || '',
+        github: profileData.github || '',
+        about: aboutText || '',
+        avatar_url: previewUrl || profileData.avatar_url || '',
+        specialty: profileData.specialty || '',
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
+      }
+
+      console.log('Attempting to save profile with data:', updateData)
+
+      const { error, data } = await supabase
         .from("profiles")
-        .upsert({
-          id: session.user.id,
-          ...updatedData,
+        .upsert(updateData, {
+          onConflict: 'id',
+          ignoreDuplicates: false
         })
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error details:', error)
+        throw new Error(`Database error: ${error.message} (Code: ${error.code})`)
+      }
 
-      setProfileData(updatedData)
-      // After save, stay in editing mode (show edit profile page)
-      // setIsEditing(false) - removed this line
+      console.log('Profile save successful:', data)
+
+      // Update local state
+      setProfileData(prev => ({
+        ...prev,
+        ...updateData,
+        about: aboutText,
+        avatar_url: previewUrl || profileData.avatar_url,
+      }))
+      
+      // Show success feedback
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been saved successfully",
+      })
+      
+      // After save, redirect to profile view (not editing mode)
+      setIsEditing(false)
     } catch (error) {
       console.error("Error saving profile:", error)
+      
+      // More detailed error message
+      let errorMessage = "Failed to save profile. Please try again."
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      
+      // Show error feedback
+      toast({
+        title: "Save Failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -188,6 +287,13 @@ export default function EnhancedProfilePage() {
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     setProfileData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false)
+    setIsEditing(false)
+    // Reload the profile page to show the updated profile
+    window.location.reload()
   }
 
   if (loading) {
@@ -214,6 +320,11 @@ export default function EnhancedProfilePage() {
         </Card>
       </div>
     )
+  }
+
+  // Show onboarding form for first-time users
+  if (showOnboarding && session.user) {
+    return <OnboardingForm user={session.user} onComplete={handleOnboardingComplete} />
   }
 
   return (

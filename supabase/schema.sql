@@ -4,7 +4,18 @@ create table if not exists public.profiles (
   phone text,
   role text check (role in ('patient','doctor','admin')) default 'patient',
   name text,
+  email text,
+  address text,
+  company text,
+  portfolio text,
+  github text,
+  about text,
+  avatar_url text,
+  specialty text,
   language text default 'en',
+  onboarding_completed boolean default false,
+  first_login_at timestamptz,
+  updated_at timestamptz default now(),
   created_at timestamp with time zone default now()
 );
 

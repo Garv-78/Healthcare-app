@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 
 interface UseImageUploadReturn {
   previewUrl: string | null
@@ -9,6 +9,7 @@ interface UseImageUploadReturn {
   uploadFile: (file: File) => Promise<string | null>
   isUploading: boolean
   error: string | null
+  clearPreview: () => void
 }
 
 export function useImageUpload(): UseImageUploadReturn {
@@ -16,6 +17,25 @@ export function useImageUpload(): UseImageUploadReturn {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const currentUrlRef = useRef<string | null>(null)
+
+  // Clean up blob URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (currentUrlRef.current) {
+        URL.revokeObjectURL(currentUrlRef.current)
+      }
+    }
+  }, [])
+
+  const clearPreview = useCallback(() => {
+    if (currentUrlRef.current) {
+      URL.revokeObjectURL(currentUrlRef.current)
+      currentUrlRef.current = null
+    }
+    setPreviewUrl(null)
+    setError(null)
+  }, [])
 
   const handleThumbnailClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -24,32 +44,72 @@ export function useImageUpload(): UseImageUploadReturn {
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      // Create preview URL
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-      setError(null)
+      try {
+        // Clean up previous URL before creating new one
+        if (currentUrlRef.current) {
+          URL.revokeObjectURL(currentUrlRef.current)
+        }
+        
+        // Create preview URL
+        const url = URL.createObjectURL(file)
+        currentUrlRef.current = url
+        setPreviewUrl(url)
+        setError(null)
+      } catch (err) {
+        setError("Failed to create image preview")
+        console.error("Error creating object URL:", err)
+      }
     }
   }, [])
 
   const uploadFile = useCallback(async (file: File): Promise<string | null> => {
+    if (!file) {
+      setError("No file provided")
+      return null
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError("File must be an image")
+      return null
+    }
+
+    // Validate file size (e.g., max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      setError("File size must be less than 5MB")
+      return null
+    }
+
     setIsUploading(true)
     setError(null)
 
     try {
       // For demo purposes, we'll use a data URL
       // In production, you'd upload to your storage service (Supabase Storage, AWS S3, etc.)
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const reader = new FileReader()
+        
         reader.onloadend = () => {
           const result = reader.result as string
           setIsUploading(false)
           resolve(result)
         }
+        
+        reader.onerror = () => {
+          const error = "Failed to read file"
+          setError(error)
+          setIsUploading(false)
+          reject(new Error(error))
+        }
+        
         reader.readAsDataURL(file)
       })
     } catch (err) {
-      setError("Failed to upload image")
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload image"
+      setError(errorMessage)
       setIsUploading(false)
+      console.error("Upload error:", err)
       return null
     }
   }, [])
@@ -62,5 +122,6 @@ export function useImageUpload(): UseImageUploadReturn {
     uploadFile,
     isUploading,
     error,
+    clearPreview,
   }
 }
