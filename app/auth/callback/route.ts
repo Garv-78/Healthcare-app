@@ -29,8 +29,7 @@ export async function GET(request: NextRequest) {
     
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
-    if (!error && data.user) {
-      // Create/update profile for OAuth user
+    if (!error && data.user) {
       try {
         const user = data.user
         const profileData = {
@@ -38,9 +37,7 @@ export async function GET(request: NextRequest) {
           phone: user.user_metadata?.phone_number || '',
           role: role as 'patient' | 'doctor',
           language: 'en'
-        }
-        
-        // Call our profile API to create/update the profile
+        }
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin
         const profileResponse = await fetch(`${baseUrl}/api/profile`, {
           method: 'POST',
@@ -56,9 +53,7 @@ export async function GET(request: NextRequest) {
             status: profileResponse.status,
             statusText: profileResponse.statusText,
             url: `${baseUrl}/api/profile`
-          })
-          
-          // Try to log response body if available
+          })
           try {
             const errorText = await profileResponse.text()
             console.error('Profile API error response:', errorText)
@@ -67,19 +62,14 @@ export async function GET(request: NextRequest) {
           }
         } else {
           console.log('Profile created/updated successfully')
-        }
-        
-        // Redirect to home page - let the app handle role-based routing from there
+        }
         return NextResponse.redirect(`${requestUrl.origin}/`)
         
       } catch (profileError) {
-        console.error('Profile creation error:', profileError)
-        // Still redirect to home page
+        console.error('Profile creation error:', profileError)
         return NextResponse.redirect(`${requestUrl.origin}/`)
       }
     }
-  }
-
-  // Something went wrong, redirect back to login
+  }
   return NextResponse.redirect(`${requestUrl.origin}/login`)
 }

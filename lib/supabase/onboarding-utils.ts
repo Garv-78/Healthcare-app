@@ -7,15 +7,10 @@ export interface OnboardingStatus {
   hasProfile: boolean
   profileCompleteness: number
 }
-
-/**
- * Check if this is a first-time user and their onboarding status
- */
 export async function checkOnboardingStatus(user: User): Promise<OnboardingStatus> {
   const supabase = createSupabaseBrowserClient()
   
-  try {
-    // Check if user has a profile
+  try {
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
@@ -27,11 +22,8 @@ export async function checkOnboardingStatus(user: User): Promise<OnboardingStatu
       throw error
     }
 
-    const hasProfile = !!profile
-    // Check onboarding completion using the actual field
-    const onboardingCompleted = profile?.onboarding_completed || false
-    
-    // Calculate profile completeness based on all available fields
+    const hasProfile = !!profile
+    const onboardingCompleted = profile?.onboarding_completed || false
     let profileCompleteness = 0
     if (profile) {
       const requiredFields = ['name', 'phone', 'role'] as const
@@ -41,9 +33,7 @@ export async function checkOnboardingStatus(user: User): Promise<OnboardingStatu
       const allFields = [...requiredFields, ...optionalFields, ...roleSpecificFields] as const
       const completedFields = allFields.filter(field => profile[field])
       profileCompleteness = Math.round((completedFields.length / allFields.length) * 100)
-    }
-
-    // Determine if this is a first-time user
+    }
     const isFirstTime = !hasProfile || !onboardingCompleted
 
     return {
@@ -62,10 +52,6 @@ export async function checkOnboardingStatus(user: User): Promise<OnboardingStatu
     }
   }
 }
-
-/**
- * Mark onboarding as completed for a user
- */
 export async function completeOnboarding(userId: string): Promise<void> {
   const supabase = createSupabaseBrowserClient()
   
@@ -91,10 +77,6 @@ export async function completeOnboarding(userId: string): Promise<void> {
     throw error
   }
 }
-
-/**
- * Create initial profile for new user
- */
 export async function createInitialProfile(user: User, profileData: {
   name: string
   phone: string
@@ -104,8 +86,7 @@ export async function createInitialProfile(user: User, profileData: {
 }): Promise<void> {
   const supabase = createSupabaseBrowserClient()
   
-  try {
-    // Create/update the basic profile with all available fields
+  try {
     const profileInsert = {
       id: user.id,
       name: profileData.name,

@@ -34,8 +34,7 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
     e.preventDefault()
     setLoading(true)
 
-    try {
-      // Validation
+    try {
       if (!formData.name?.trim()) {
         toast({
           title: "Missing Name",
@@ -72,9 +71,7 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
         return
       }
 
-      console.log('Starting onboarding process with data:', { ...formData, userId: user.id })
-
-      // Create initial profile with all available fields
+      console.log('Starting onboarding process with data:', { ...formData, userId: user.id })
       await createInitialProfile(user, {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
@@ -83,9 +80,7 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
         specialty: formData.specialty?.trim() || ''
       })
 
-      console.log('Initial profile created, completing onboarding...')
-
-      // Mark onboarding as completed
+      console.log('Initial profile created, completing onboarding...')
       await completeOnboarding(user.id)
       
       console.log('Profile setup completed successfully')
@@ -94,9 +89,7 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
         title: "Welcome to HealthConnect!",
         description: "Your profile has been set up successfully",
         duration: 3000
-      })
-
-      // Call parent completion handler and redirect
+      })
       onComplete()
       router.push('/profile')
     } catch (error) {
@@ -160,7 +153,7 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Full Name *</Label>
@@ -186,7 +179,6 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
               </div>
             </div>
 
-            {/* Role Selection */}
             <div>
               <Label htmlFor="role">I am a *</Label>
               <Select value={formData.role} onValueChange={(value) => handleChange("role", value)}>
@@ -210,7 +202,6 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
               </Select>
             </div>
 
-            {/* Doctor-specific fields */}
             {formData.role === "doctor" && (
               <div>
                 <Label htmlFor="specialty">Medical Specialty *</Label>
@@ -225,7 +216,6 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
               </div>
             )}
 
-            {/* Address */}
             <div>
               <Label htmlFor="address">Address (Optional)</Label>
               <Textarea
@@ -237,7 +227,6 @@ export function OnboardingForm({ user, onComplete }: OnboardingFormProps) {
               />
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
               <Button 
                 type="button"

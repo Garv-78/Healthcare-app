@@ -26,10 +26,8 @@ export async function POST(req: Request) {
     avatar_url
   } = body || {}
 
-  // Validate and secure role assignment
-  let userRole = "patient" // Default to patient
-  
-  // Check if user already has a role in the database
+  let userRole = "patient" 
+
   const { data: existingProfile } = await supabase
     .from("profiles")
     .select("role")
@@ -37,17 +35,16 @@ export async function POST(req: Request) {
     .single()
   
   if (existingProfile?.role) {
-    // User already has a role, keep the existing one to prevent privilege escalation
+
     userRole = existingProfile.role
   } else {
-    // New user - validate the requested role
+
     const requestedRole = role || user.user_metadata?.role
     if (requestedRole === "doctor" || requestedRole === "patient") {
       userRole = requestedRole
     }
   }
 
-  // Upsert profile with all fields
   const { error: upsertErr } = await supabase
     .from("profiles")
     .upsert({ 
@@ -69,7 +66,6 @@ export async function POST(req: Request) {
 
   if (upsertErr) return NextResponse.json({ error: upsertErr.message }, { status: 400 })
 
-  // If registering/updating as doctor, ensure doctor-specific fields are handled
   if (userRole === "doctor") {
     try {
       const { error: docErr } = await supabase

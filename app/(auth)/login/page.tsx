@@ -45,12 +45,11 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
-  // Redirect if already logged in
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        // Use the profile utility to determine appropriate redirect
+
         const redirectUrl = await getPostLoginRedirect(session.user.id)
         router.push(redirectUrl)
       }
@@ -84,14 +83,14 @@ export default function AuthPage() {
       if (signUpErr) throw signUpErr
       
       if (data.session) {
-        // User is immediately signed in
+
         await fetch("/api/profile", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, phone, role, language: "en" })
         })
         setStatus({ type: "success", message: "Account created successfully!" })
-        // New users always go to profile to complete setup
+
         setTimeout(() => router.push("/profile"), 1500)
       } else {
         setStatus({ type: "success", message: "Please check your email to verify your account." })
@@ -112,8 +111,7 @@ export default function AuthPage() {
       if (error) throw error
       
       setStatus({ type: "success", message: "Signed in successfully!" })
-      
-      // Determine redirect based on profile status
+
       if (data.user) {
         const redirectUrl = await getPostLoginRedirect(data.user.id)
         setTimeout(() => router.push(redirectUrl), 1000)
@@ -152,7 +150,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
+      
       <header className="border-b border-border/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
@@ -185,7 +183,7 @@ export default function AuthPage() {
             </CardHeader>
             
             <CardContent className="space-y-6">
-              {/* Role Selection */}
+              
               <div className="space-y-3">
                 <Label className="text-sm font-medium">I am a</Label>
                 <Select value={role} onValueChange={(value: Role) => setRole(value)}>

@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-
-/**
- * Database Setup Script for Development
- * 
- * This script helps set up the database with the correct schema
- * and applies necessary migrations for profile management.
- */
-
 console.log('🗄️  Database Setup for Profile Management\n')
 
 console.log('📋 Required Database Schema Updates:')

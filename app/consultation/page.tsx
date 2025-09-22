@@ -49,7 +49,7 @@ export default function ConsultationPage() {
 
   useEffect(() => {
     if (isCallActive && videoRef.current) {
-      // Simulate video stream (in real implementation, this would be WebRTC)
+
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
         .then((stream) => {
@@ -97,7 +97,6 @@ export default function ConsultationPage() {
       ])
       setChatMessage("")
 
-      // Simulate doctor response
       setTimeout(() => {
         setChatMessages((prev) => [
           ...prev,
@@ -114,7 +113,7 @@ export default function ConsultationPage() {
   if (isCallActive) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Call Header */}
+        
         <header className="border-b border-border bg-card p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -144,9 +143,9 @@ export default function ConsultationPage() {
         </header>
 
         <div className="flex h-[calc(100vh-80px)]">
-          {/* Video Area */}
+          
           <div className="flex-1 bg-gray-900 relative">
-            {/* Doctor Video (Simulated) */}
+            
             <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
               <div className="text-center text-white">
                 <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
@@ -157,7 +156,6 @@ export default function ConsultationPage() {
               </div>
             </div>
 
-            {/* Patient Video (Small) */}
             <div className="absolute bottom-4 right-4 w-48 h-36 bg-gray-800 rounded-lg overflow-hidden">
               {isVideoOn ? (
                 <video ref={videoRef} autoPlay muted className="w-full h-full object-cover" />
@@ -168,7 +166,6 @@ export default function ConsultationPage() {
               )}
             </div>
 
-            {/* Call Controls */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
               <div className="flex items-center space-x-4 bg-black/50 backdrop-blur-sm rounded-full px-6 py-3">
                 <Button
@@ -194,7 +191,6 @@ export default function ConsultationPage() {
             </div>
           </div>
 
-          {/* Chat Sidebar */}
           <div className="w-80 border-l border-border bg-card flex flex-col">
             <div className="p-4 border-b border-border">
               <h3 className="font-semibold text-foreground flex items-center">
@@ -244,7 +240,7 @@ export default function ConsultationPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center space-x-4">
@@ -264,14 +260,14 @@ export default function ConsultationPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Consultation Setup */}
+          
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Start Your Consultation</CardTitle>
               <CardDescription>Connect with qualified doctors from Nabha Civil Hospital</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Doctor Selection */}
+              
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Select Doctor</label>
                 <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
@@ -297,7 +293,6 @@ export default function ConsultationPage() {
                 </Select>
               </div>
 
-              {/* Consultation Reason */}
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Reason for Consultation</label>
                 <Textarea
@@ -320,7 +315,6 @@ export default function ConsultationPage() {
             </CardContent>
           </Card>
 
-          {/* Available Doctors Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {availableDoctors.map((doctor) => (
               <Card key={doctor.id} className={`${doctor.available ? "border-primary/20" : "opacity-60"}`}>

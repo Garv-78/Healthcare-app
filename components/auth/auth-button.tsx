@@ -20,7 +20,6 @@ export function AuthButton() {
   const supabase = createSupabaseBrowserClient()
   const { toast } = useToast()
 
-  // Load user profile function with better avatar handling
   const loadUserProfile = async (user: any) => {
     if (!user || profileLoading) return
     
@@ -39,8 +38,7 @@ export function AuthButton() {
 
   useEffect(() => {
     let isMounted = true
-    
-    // Get initial session with better error handling
+
     const getInitialSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession()
@@ -50,7 +48,7 @@ export function AuthButton() {
             setSession(null)
           } else {
             setSession(data.session)
-            // Load user profile if session exists
+
             if (data.session?.user) {
               await loadUserProfile(data.session.user)
             }
@@ -67,8 +65,7 @@ export function AuthButton() {
     }
     
     getInitialSession()
-    
-    // Fallback to stop loading after 10 seconds in case of network issues
+
     const loadingTimeout = setTimeout(() => {
       if (isMounted && loading) {
         console.warn("Auth session check timed out, stopping loading state")
@@ -76,20 +73,19 @@ export function AuthButton() {
       }
     }, 10000)
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (isMounted) {
         console.log('Auth state change:', event, session ? 'session exists' : 'no session')
         setSession(session)
-        setLoading(false) // Ensure loading is set to false on auth state changes
+        setLoading(false) 
         
         if (event === 'SIGNED_OUT') {
           setSigningOut(false)
           setSession(null)
           setUserProfile(null)
-          // Don't redirect here, let handleSignOut handle it
+
         } else if (event === 'SIGNED_IN' && session?.user) {
-          // Load user profile when signed in
+
           await loadUserProfile(session.user)
         }
       }
@@ -103,25 +99,23 @@ export function AuthButton() {
   }, [supabase.auth])
 
   const handleSignOut = async () => {
-    if (signingOut) return // Prevent multiple clicks
+    if (signingOut) return 
     
     setSigningOut(true)
     
     console.log('Starting sign out process...')
     
     try {
-      // Show signing out message
+
       toast({
         title: "Signing out...",
         description: "Logging you out securely.",
         duration: 3000
       })
 
-      // Step 1: Clear local state immediately
       setSession(null)
       setUserProfile(null)
-      
-      // Step 2: Clear all local storage
+
       try {
         const keysToRemove = []
         for (let i = 0; i < localStorage.length; i++) {
@@ -136,44 +130,38 @@ export function AuthButton() {
         console.warn('Could not clear localStorage:', storageError)
       }
 
-      // Step 3: Try to sign out via Supabase (but don't wait for it)
       supabase.auth.signOut().catch(error => {
         console.warn('Supabase sign out had an issue, but continuing with redirect:', error)
       })
 
       console.log('Sign out initiated, redirecting...')
 
-      // Step 4: Show success and redirect immediately
       toast({
         title: "Signed out",
         description: "Redirecting to home page...",
         duration: 2000
       })
 
-      // Force redirect immediately (don't wait for Supabase)
       setTimeout(() => {
         console.log('Forcing redirect to home page')
-        window.location.replace('/') // Use replace instead of href for better cleanup
+        window.location.replace('/') 
       }, 500)
 
     } catch (error) {
       console.error("Sign out error:", error)
-      
-      // Even if there's an error, still try to redirect
+
       toast({
         title: "Signed out",
         description: "Redirecting to home page...",
         duration: 2000
       })
-      
-      // Force redirect anyway
+
       setTimeout(() => {
         console.log('Forcing redirect after error')
         window.location.replace('/')
       }, 1000)
     }
-    
-    // Don't reset signingOut here, let the redirect handle it
+
   }
 
   if (loading) {

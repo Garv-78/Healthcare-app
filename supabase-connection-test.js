@@ -1,18 +1,16 @@
-// Quick Supabase connection test
-// Run this in your browser console at http://localhost:3000 to test connectivity
+
+
 
 const testSupabaseConnection = async () => {
   try {
     console.log('🔍 Testing Supabase Connection...')
-    
-    // Test 1: Check if supabase client is available
+
     if (typeof window !== 'undefined' && window.supabase) {
       console.log('✅ Supabase client found')
     } else {
       console.log('⚠️ Supabase client not found in window')
     }
-    
-    // Test 2: Try to get session
+
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
     if (sessionError) {
@@ -22,8 +20,7 @@ const testSupabaseConnection = async () => {
     
     if (session) {
       console.log('✅ User is authenticated:', session.user.email)
-      
-      // Test 3: Try to query profiles table
+
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -41,8 +38,7 @@ const testSupabaseConnection = async () => {
       } else {
         console.log('ℹ️ No profile found (new user)')
       }
-      
-      // Test 4: Check storage access
+
       const { data: buckets, error: storageError } = await supabase.storage.listBuckets()
       
       if (storageError) {
@@ -64,7 +60,6 @@ const testSupabaseConnection = async () => {
   }
 }
 
-// Instructions
 console.log('🚀 Supabase Connection Tester Ready!')
 console.log('📝 To test your connection:')
 console.log('1. Open your app at http://localhost:3000')

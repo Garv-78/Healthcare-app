@@ -3,16 +3,13 @@ import { createSupabaseBrowserClient } from './client'
 export async function clearUserSession() {
   const supabase = createSupabaseBrowserClient()
   
-  try {
-    // Sign out with global scope to clear all sessions
+  try {
     const { error } = await supabase.auth.signOut({ scope: 'global' })
     
     if (error) {
       console.error('Supabase signOut error:', error)
       throw new Error(`Supabase sign out failed: ${error.message}`)
-    }
-    
-    // Clear all local storage items related to Supabase
+    }
     try {
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('sb-') || key.includes('supabase') || key === 'hc_pending_profile') {
@@ -21,9 +18,7 @@ export async function clearUserSession() {
       })
     } catch (storageError) {
       console.warn('Could not clear localStorage:', storageError)
-    }
-    
-    // Clear session storage
+    }
     try {
       sessionStorage.clear()
     } catch (storageError) {
@@ -38,8 +33,7 @@ export async function clearUserSession() {
 }
 
 export async function forceLogout(showToast: boolean = true): Promise<{ success: boolean; error?: string }> {
-  try {
-    // Call server-side logout API first
+  try {
     const apiResponse = await fetch('/api/auth/logout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
@@ -49,22 +43,15 @@ export async function forceLogout(showToast: boolean = true): Promise<{ success:
       console.warn('Server logout API failed with status:', apiResponse.status)
     }
   } catch (apiError) {
-    console.warn('Server logout API failed:', apiError)
-    // Continue with client-side logout even if server-side fails
-  }
-  
-  // Clear client-side session
+    console.warn('Server logout API failed:', apiError)
+  }
   const sessionResult = await clearUserSession()
   
   if (!sessionResult.success) {
     console.error('Failed to clear user session:', sessionResult.error)
     return { success: false, error: sessionResult.error }
-  }
-
-  // Add a small delay to ensure all cleanup is complete
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
-  // Force redirect to homepage
+  }
+  await new Promise(resolve => setTimeout(resolve, 100))
   window.location.href = '/'
   
   return { success: true }

@@ -21,15 +21,9 @@ export async function POST(request: NextRequest) {
           },
         },
       }
-    )
-
-    // Sign out on the server side
-    await supabase.auth.signOut()
-
-    // Clear all auth-related cookies
-    const response = NextResponse.json({ success: true })
-    
-    // Remove all Supabase-related cookies
+    )
+    await supabase.auth.signOut()
+    const response = NextResponse.json({ success: true })
     const allCookies = cookieStore.getAll()
     allCookies.forEach(cookie => {
       if (cookie.name.startsWith('sb-') || cookie.name.includes('supabase')) {

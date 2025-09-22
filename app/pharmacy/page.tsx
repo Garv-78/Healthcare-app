@@ -25,7 +25,6 @@ export default function PharmacyPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPharmacy, setSelectedPharmacy] = useState("")
 
-  // Mock pharmacy data
   const pharmacies = [
     {
       id: "1",
@@ -69,7 +68,6 @@ export default function PharmacyPage() {
     },
   ]
 
-  // Mock medicine availability data
   const medicines = [
     {
       id: "1",
@@ -149,7 +147,7 @@ export default function PharmacyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center space-x-4">
@@ -169,7 +167,7 @@ export default function PharmacyPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          {/* Search Bar */}
+          
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Find Medicines</CardTitle>
@@ -200,7 +198,6 @@ export default function PharmacyPage() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Medicines Tab */}
             <TabsContent value="medicines" className="space-y-4">
               {filteredMedicines.map((medicine) => {
                 const availability = getAvailabilityStatus(medicine)
@@ -277,7 +274,6 @@ export default function PharmacyPage() {
               })}
             </TabsContent>
 
-            {/* Pharmacies Tab */}
             <TabsContent value="pharmacies" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {pharmacies.map((pharmacy) => (
@@ -348,7 +344,6 @@ export default function PharmacyPage() {
             </TabsContent>
           </Tabs>
 
-          {/* Emergency Medicine Alert */}
           <Card className="mt-8 bg-amber-50 border-amber-200">
             <CardContent className="pt-6">
               <div className="flex items-start space-x-3">

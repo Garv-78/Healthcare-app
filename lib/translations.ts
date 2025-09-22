@@ -2,19 +2,19 @@ export type Language =
   | "en"
   | "hi"
   | "pa"
-  | "bn" // Bengali
-  | "te" // Telugu
-  | "ta" // Tamil
-  | "ml" // Malayalam
-  | "kn" // Kannada
-  | "gu" // Gujarati
-  | "mr" // Marathi
-  | "or" // Odia
-  | "as" // Assamese
-  | "ur" // Urdu
+  | "bn" 
+  | "te" 
+  | "ta" 
+  | "ml" 
+  | "kn" 
+  | "gu" 
+  | "mr" 
+  | "or" 
+  | "as" 
+  | "ur" 
 
 export interface Translations {
-  // Common
+
   home: string
   back: string
   next: string
@@ -24,7 +24,6 @@ export interface Translations {
   loading: string
   search: string
 
-  // Navigation
   videoConsultation: string
   healthRecords: string
   medicineTracker: string
@@ -34,7 +33,6 @@ export interface Translations {
   navForPatients: string
   navForDoctors: string
 
-  // Homepage
   healthcareAtFingerTips: string
   healthcareDescription: string
   villagesServed: string
@@ -58,7 +56,6 @@ export interface Translations {
   videoPlay: string
   videoDemoLabel: string
 
-  // Consultation
   selectDoctor: string
   reasonForConsultation: string
   startVideoConsultation: string
@@ -67,7 +64,6 @@ export interface Translations {
   chat: string
   typeMessage: string
 
-  // Health Records
   patientInfo: string
   consultations: string
   labResults: string
@@ -75,7 +71,6 @@ export interface Translations {
   vitalSigns: string
   exportRecords: string
 
-  // Pharmacy
   findMedicines: string
   medicineAvailability: string
   nearbyPharmacies: string
@@ -84,7 +79,6 @@ export interface Translations {
   notAvailable: string
   reserveMedicine: string
 
-  // Symptoms
   analyzingSymptoms: string
   assessmentResults: string
   recommendedActions: string
@@ -96,11 +90,9 @@ export interface Translations {
   disclaimerText: string
 }
 
-// Minimal catalog: full strings for en; substantial coverage for hi/pa.
-// Other Indian languages are placeholders and will fall back to English.
 export const translations: Partial<Record<Language, Partial<Translations>>> = {
   en: {
-    // Common
+
     home: "Home",
     back: "Back",
     next: "Next",
@@ -110,7 +102,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     loading: "Loading...",
     search: "Search",
 
-    // Navigation
     videoConsultation: "Video Consultation",
     healthRecords: "Health Records",
     medicineTracker: "Medicine Tracker",
@@ -120,7 +111,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   navForPatients: "For patients",
   navForDoctors: "For doctors",
 
-    // Homepage
     healthcareAtFingerTips: "Healthcare at your fingertips",
     healthcareDescription:
       "Connect with doctors, manage your health records, and get medical care from 173 villages around Nabha. Quality healthcare, now accessible to all.",
@@ -145,7 +135,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   videoPlay: "Play",
   videoDemoLabel: "Demo video",
 
-    // Consultation
     selectDoctor: "Select Doctor",
     reasonForConsultation: "Reason for consultation",
     startVideoConsultation: "Start video consultation",
@@ -154,7 +143,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     chat: "Chat",
     typeMessage: "Type your message...",
 
-    // Health Records
     patientInfo: "Patient Information",
     consultations: "Consultations",
     labResults: "Lab Results",
@@ -162,7 +150,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     vitalSigns: "Vital Signs",
     exportRecords: "Export Records",
 
-    // Pharmacy
     findMedicines: "Find Medicines",
     medicineAvailability: "Medicine Availability",
     nearbyPharmacies: "Nearby Pharmacies",
@@ -171,7 +158,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     notAvailable: "Not Available",
     reserveMedicine: "Reserve Medicine",
 
-    // Symptoms
     analyzingSymptoms: "Analyzing your symptoms",
     assessmentResults: "Assessment Results",
     recommendedActions: "Recommended actions",
@@ -185,7 +171,7 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   },
 
   hi: {
-    // Common
+
     home: "मुख्य पृष्ठ",
     back: "वापस",
     next: "अगला",
@@ -195,7 +181,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     loading: "लोड हो रहा है...",
     search: "खोजें",
 
-    // Navigation
     videoConsultation: "वीडियो परामर्श",
     healthRecords: "स्वास्थ्य रिकॉर्ड",
     medicineTracker: "दवा ट्रैकर",
@@ -205,7 +190,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   navForPatients: "मरीजों के लिए",
   navForDoctors: "डॉक्टरों के लिए",
 
-    // Homepage
     healthcareAtFingerTips: "आपकी उंगलियों पर स्वास्थ्य सेवा",
     healthcareDescription:
       "डॉक्टरों से जुड़ें, अपने स्वास्थ्य रिकॉर्ड प्रबंधित करें और नाभा के आसपास के 173 गांवों से देखभाल प्राप्त करें। गुणवत्तापूर्ण स्वास्थ्य सेवा अब सभी के लिए सुलभ।",
@@ -230,7 +214,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   videoPlay: "चलाएँ",
   videoDemoLabel: "डेमो वीडियो",
 
-    // Consultation
     selectDoctor: "डॉक्टर चुनें",
     reasonForConsultation: "परामर्श का कारण",
     startVideoConsultation: "वीडियो परामर्श शुरू करें",
@@ -239,7 +222,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     chat: "चैट",
     typeMessage: "अपना संदेश लिखें...",
 
-    // Health Records
     patientInfo: "मरीज़ की जानकारी",
     consultations: "परामर्श",
     labResults: "लैब परिणाम",
@@ -247,7 +229,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     vitalSigns: "महत्वपूर्ण संकेत",
     exportRecords: "रिकॉर्ड निर्यात करें",
 
-    // Pharmacy
     findMedicines: "दवाइयाँ खोजें",
     medicineAvailability: "दवा उपलब्धता",
     nearbyPharmacies: "नज़दीकी फार्मेसी",
@@ -256,7 +237,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     notAvailable: "उपलब्ध नहीं",
     reserveMedicine: "दवा आरक्षित करें",
 
-    // Symptoms
     analyzingSymptoms: "आपके लक्षणों का विश्लेषण",
     assessmentResults: "आकलन परिणाम",
     recommendedActions: "अनुशंसित कार्य",
@@ -270,7 +250,7 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   },
 
   pa: {
-    // Common
+
     home: "ਘਰ",
     back: "ਵਾਪਸ",
     next: "ਅਗਲਾ",
@@ -280,7 +260,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     loading: "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
     search: "ਖੋਜੋ",
 
-    // Navigation
     videoConsultation: "ਵੀਡੀਓ ਸਲਾਹ",
     healthRecords: "ਸਿਹਤ ਰਿਕਾਰਡ",
     medicineTracker: "ਦਵਾਈ ਟਰੈਕਰ",
@@ -290,7 +269,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   navForPatients: "ਮਰੀਜ਼ਾਂ ਲਈ",
   navForDoctors: "ਡਾਕਟਰਾਂ ਲਈ",
 
-    // Homepage
     healthcareAtFingerTips: "ਤੁਹਾਡੀਆਂ ਉਂਗਲਾਂ 'ਤੇ ਸਿਹਤ ਸੇਵਾ",
     healthcareDescription:
       "ਡਾਕਟਰਾਂ ਨਾਲ ਜੁੜੋ, ਆਪਣੇ ਸਿਹਤ ਰਿਕਾਰਡਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ, ਅਤੇ ਨਾਭਾ ਦੇ ਆਲੇ-ਦੁਆਲੇ ਦੇ 173 ਪਿੰਡਾਂ ਤੋਂ ਮੈਡੀਕਲ ਦੇਖਭਾਲ ਪ੍ਰਾਪਤ ਕਰੋ। ਗੁਣਵੱਤਾ ਵਾਲੀ ਸਿਹਤ ਸੇਵਾ, ਹੁਣ ਸਭ ਲਈ ਪਹੁੰਚਯੋਗ।",
@@ -315,7 +293,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
   videoPlay: "ਚਲਾਓ",
   videoDemoLabel: "ਡੇਮੋ ਵੀਡੀਓ",
 
-    // Consultation
     selectDoctor: "ਡਾਕਟਰ ਚੁਣੋ",
     reasonForConsultation: "ਸਲਾਹ ਦਾ ਕਾਰਨ",
     startVideoConsultation: "ਵੀਡੀਓ ਸਲਾਹ ਸ਼ੁਰੂ ਕਰੋ",
@@ -324,7 +301,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     chat: "ਚੈਟ",
     typeMessage: "ਆਪਣਾ ਸੰਦੇਸ਼ ਟਾਈਪ ਕਰੋ...",
 
-    // Health Records
     patientInfo: "ਮਰੀਜ਼ ਦੀ ਜਾਣਕਾਰੀ",
     consultations: "ਸਲਾਹ-ਮਸ਼ਵਰੇ",
     labResults: "ਲੈਬ ਨਤੀਜੇ",
@@ -332,7 +308,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     vitalSigns: "ਮਹੱਤਵਪੂਰਨ ਸੰਕੇਤ",
     exportRecords: "ਰਿਕਾਰਡ ਨਿਰਯਾਤ ਕਰੋ",
 
-    // Pharmacy
     findMedicines: "ਦਵਾਈਆਂ ਲੱਭੋ",
     medicineAvailability: "ਦਵਾਈ ਦੀ ਉਪਲਬਧਤਾ",
     nearbyPharmacies: "ਨੇੜਲੀਆਂ ਫਾਰਮੇਸੀਆਂ",
@@ -341,7 +316,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
     notAvailable: "ਉਪਲਬਧ ਨਹੀਂ",
     reserveMedicine: "ਦਵਾਈ ਰਿਜ਼ਰਵ ਕਰੋ",
 
-    // Symptoms
     analyzingSymptoms: "ਤੁਹਾਡੇ ਲੱਛਣਾਂ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ",
     assessmentResults: "ਮੁਲਾਂਕਣ ਨਤੀਜੇ",
     recommendedActions: "ਸਿਫਾਰਸ਼ੀ ਕਾਰਵਾਈਆਂ",
@@ -354,7 +328,6 @@ export const translations: Partial<Record<Language, Partial<Translations>>> = {
       "ਇਹ AI ਮੁਲਾਂਕਣ ਸਿਰਫ਼ ਜਾਣਕਾਰੀ ਦੇ ਉਦੇਸ਼ਾਂ ਲਈ ਹੈ ਅਤੇ ਪੇਸ਼ੇਵਰ ਮੈਡੀਕਲ ਸਲਾਹ ਦਾ ਬਦਲ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ। ਸਹੀ ਨਿਦਾਨ ਅਤੇ ਇਲਾਜ ਲਈ ਹਮੇਸ਼ਾ ਯੋਗ ਸਿਹਤ ਸੇਵਾ ਪ੍ਰਦਾਤਾਵਾਂ ਨਾਲ ਸਲਾਹ ਕਰੋ।",
   },
 
-  // Other Indian languages (fall back to English)
   bn: { availableLanguages: "বাংলা সহ একাধিক ভারতীয় ভাষায় উপলব্ধ" },
   te: { availableLanguages: "హిందీ, పంజాబీ తో పాటు అనేక భారతీయ భాషల్లో అందుబాటులో" },
   ta: { availableLanguages: "இந்தி, பஞ்சாபியுடன் பல இந்திய மொழிகளில் கிடைக்கிறது" },
@@ -392,4 +365,3 @@ export function getMergedTranslations(language: Language): Translations {
 export function useTranslation(language: Language = "en"): Translations {
   return getMergedTranslations(language)
 }
-

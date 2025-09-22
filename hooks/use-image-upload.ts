@@ -17,9 +17,7 @@ export function useImageUpload(): UseImageUploadReturn {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const currentUrlRef = useRef<string | null>(null)
-
-  // Clean up blob URLs to prevent memory leaks
+  const currentUrlRef = useRef<string | null>(null)
   useEffect(() => {
     return () => {
       if (currentUrlRef.current) {
@@ -44,13 +42,10 @@ export function useImageUpload(): UseImageUploadReturn {
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      try {
-        // Clean up previous URL before creating new one
+      try {
         if (currentUrlRef.current) {
           URL.revokeObjectURL(currentUrlRef.current)
-        }
-        
-        // Create preview URL
+        }
         const url = URL.createObjectURL(file)
         currentUrlRef.current = url
         setPreviewUrl(url)
@@ -66,16 +61,12 @@ export function useImageUpload(): UseImageUploadReturn {
     if (!file) {
       setError("No file provided")
       return null
-    }
-
-    // Validate file type
+    }
     if (!file.type.startsWith('image/')) {
       setError("File must be an image")
       return null
-    }
-
-    // Validate file size (e.g., max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    }
+    const maxSize = 5 * 1024 * 1024 
     if (file.size > maxSize) {
       setError("File size must be less than 5MB")
       return null
@@ -84,9 +75,7 @@ export function useImageUpload(): UseImageUploadReturn {
     setIsUploading(true)
     setError(null)
 
-    try {
-      // For demo purposes, we'll use a data URL
-      // In production, you'd upload to your storage service (Supabase Storage, AWS S3, etc.)
+    try {
       return new Promise((resolve, reject) => {
         const reader = new FileReader()
         

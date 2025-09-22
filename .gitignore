@@ -31,6 +31,20 @@ next-env.d.ts
 *.md
 !README.md
 
+# test files
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+**/tests/**
+**/__tests__/**
+test-*.js
+*-test.js
+supabase-connection-test.js
+validate-implementation.js
+simple-validate.js
+setup-database.js
+
 3b9093df-df8b-4eb2-8ee5-d3fce754197f.mp4
 CLI_USAGE.md
 LOGOUT_FIX_DOCUMENTATION.md

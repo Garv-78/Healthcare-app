@@ -1,22 +1,11 @@
 #!/usr/bin/env node
-
-/**
- * Test Script for Bug Fixes
- * 
- * This script validates the two main bug fixes:
- * 1. Onboarding form setup error
- * 2. Sign-out functionality not working
- */
-
 const fs = require('fs')
 const path = require('path')
 
 console.log('🔧 Testing Bug Fixes...\n')
 
 let issues = []
-let fixes = []
-
-// Test 1: Check onboarding form improvements
+let fixes = []
 console.log('✅ Testing onboarding form fixes...')
 try {
   const onboardingForm = fs.readFileSync(
@@ -39,9 +28,7 @@ try {
   console.log('   ✓ Onboarding form enhanced with better error handling')
 } catch (e) {
   issues.push(`Failed to validate onboarding form: ${e.message}`)
-}
-
-// Test 2: Check onboarding utilities improvements
+}
 console.log('✅ Testing onboarding utilities fixes...')
 try {
   const onboardingUtils = fs.readFileSync(
@@ -64,9 +51,7 @@ try {
   console.log('   ✓ Onboarding utilities enhanced with robust error handling')
 } catch (e) {
   issues.push(`Failed to validate onboarding utilities: ${e.message}`)
-}
-
-// Test 3: Check sign-out functionality improvements
+}
 console.log('✅ Testing sign-out fixes...')
 try {
   const authButton = fs.readFileSync(
@@ -93,17 +78,13 @@ try {
   console.log('   ✓ Sign-out functionality simplified and made more reliable')
 } catch (e) {
   issues.push(`Failed to validate sign-out fixes: ${e.message}`)
-}
-
-// Test 4: Check overall integration
+}
 console.log('✅ Testing integration...')
 if (fixes.length >= 6) {
   console.log('   ✓ All major fixes implemented successfully')
 } else {
   issues.push(`Only ${fixes.length} fixes detected, expected more comprehensive changes`)
-}
-
-// Summary
+}
 console.log('\n📊 Bug Fix Summary:')
 console.log(`   🔧 Fixes implemented: ${fixes.length}`)
 console.log(`   ❌ Issues found: ${issues.length}`)

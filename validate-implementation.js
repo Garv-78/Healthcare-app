@@ -1,18 +1,8 @@
 #!/usr/bin/env node
-
-/**
- * Implementation Validation Script
- * 
- * This script validates that all the enhancements we've made to the 
- * telemedicine platform are correctly implemented and can be imported/used.
- */
-
 console.log('🔍 Validating Telemedicine Platform Enhancements...\n')
 
 let errors = []
-let warnings = []
-
-// Test 1: Onboarding Utilities
+let warnings = []
 console.log('✅ Testing onboarding utilities...')
 try {
   const onboardingUtils = require('./lib/supabase/onboarding-utils.ts')
@@ -25,9 +15,7 @@ try {
   console.log('   ✓ Onboarding utilities are properly exported')
 } catch (e) {
   errors.push(`Failed to load onboarding utilities: ${e.message}`)
-}
-
-// Test 2: User Profile Utilities
+}
 console.log('✅ Testing user profile utilities...')
 try {
   const profileUtils = require('./lib/supabase/user-profile-utils.ts')
@@ -40,9 +28,7 @@ try {
   console.log('   ✓ User profile utilities are properly exported')
 } catch (e) {
   errors.push(`Failed to load user profile utilities: ${e.message}`)
-}
-
-// Test 3: Enhanced Auth Utils
+}
 console.log('✅ Testing enhanced auth utilities...')
 try {
   const authUtils = require('./lib/supabase/auth-utils.ts')
@@ -55,9 +41,7 @@ try {
   console.log('   ✓ Enhanced auth utilities are properly exported')
 } catch (e) {
   errors.push(`Failed to load auth utilities: ${e.message}`)
-}
-
-// Test 4: Check File Existence
+}
 console.log('✅ Checking component files...')
 const fs = require('fs')
 const path = require('path')
@@ -76,9 +60,7 @@ requiredFiles.forEach(filePath => {
   } else {
     console.log(`   ✓ ${filePath} exists`)
   }
-})
-
-// Test 5: Database Migration Content
+})
 console.log('✅ Testing database migration...')
 try {
   const migrationPath = path.join(__dirname, 'supabase/migrations/2025-09-21_add_onboarding_tracking.sql')
@@ -102,9 +84,7 @@ try {
   }
 } catch (e) {
   errors.push(`Failed to validate migration: ${e.message}`)
-}
-
-// Summary
+}
 console.log('\n📊 Validation Summary:')
 console.log(`   ✅ Enhancements validated: ${5 - errors.length}/5`)
 console.log(`   ❌ Errors found: ${errors.length}`)

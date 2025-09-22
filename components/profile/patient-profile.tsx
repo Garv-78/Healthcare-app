@@ -40,8 +40,7 @@ export default function PatientProfile() {
           .single()
         
         if (profileError) {
-          if (profileError.code === 'PGRST116') {
-            // No profile found, this is fine for new users
+          if (profileError.code === 'PGRST116') {
             console.log("No existing profile found, user can create one")
           } else {
             console.error("Error loading profile:", profileError)
@@ -64,7 +63,7 @@ export default function PatientProfile() {
   }, [supabase])
 
   const save = async () => {
-    if (saving) return // Prevent multiple simultaneous save operations
+    if (saving) return 
     
     setSaving(true)
     setStatus(null)
@@ -95,9 +94,7 @@ export default function PatientProfile() {
         throw new Error(`Database error: ${error.message}`)
       }
       
-      setStatus("Profile saved successfully!")
-      
-      // Clear success message after 3 seconds
+      setStatus("Profile saved successfully!")
       setTimeout(() => setStatus(null), 3000)
     } catch (error) {
       console.error("Error saving profile:", error)

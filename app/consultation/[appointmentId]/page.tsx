@@ -28,8 +28,7 @@ export default function ConsultRoomPage() {
     }
     await supabase.from("consents").insert({ patient_id: user.id, appointment_id: appointmentId, text: "I consent to telemedicine consultation.", accepted: true })
     setConsented(true)
-    setOpen(false)
-    // fetch LiveKit token for this appointment room
+    setOpen(false)
     const roomName = `appt_${appointmentId}`
     const res = await fetch("/api/livekit/token", { method: "POST", body: JSON.stringify({ roomName }) })
     const data = await res.json()

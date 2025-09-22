@@ -4,9 +4,7 @@ const fs = require('fs')
 const path = require('path')
 
 console.log('🏥 Setting up Enhanced Profile Page for Telemedicine Platform...')
-console.log('')
-
-// Database migration script content
+console.log('')
 const migrationScript = `-- Enhanced Profile Schema Migration
 -- Add additional columns to profiles table
 
@@ -77,15 +75,11 @@ CREATE POLICY "Users can update their own profile" ON profiles
 DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
 CREATE POLICY "Users can insert their own profile" ON profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
-`
-
-// Create migrations directory if it doesn't exist
+`
 const migrationsDir = path.join(process.cwd(), 'supabase', 'migrations')
 if (!fs.existsSync(migrationsDir)) {
   fs.mkdirSync(migrationsDir, { recursive: true })
-}
-
-// Write migration file
+}
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0] + '_' + 
                  new Date().toISOString().replace(/[:.]/g, '-').split('T')[1].split('-')[0]
 const migrationFile = path.join(migrationsDir, `${timestamp}_enhanced_profile_schema.sql`)
@@ -94,9 +88,7 @@ fs.writeFileSync(migrationFile, migrationScript)
 
 console.log('✅ Created database migration file:')
 console.log(`   ${migrationFile}`)
-console.log('')
-
-// Package.json script addition
+console.log('')
 const packageJsonPath = path.join(process.cwd(), 'package.json')
 if (fs.existsSync(packageJsonPath)) {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
@@ -113,9 +105,7 @@ if (fs.existsSync(packageJsonPath)) {
   console.log('   - setup:profile: Setup enhanced profile functionality')
   console.log('   - db:migrate: Run database migrations')
   console.log('')
-}
-
-// Create setup instructions
+}
 const setupInstructions = `
 # Enhanced Profile Page Setup Complete! 🎉
 
@@ -181,9 +171,7 @@ The migration adds these fields to your \`profiles\` table:
 Enjoy your enhanced profile page! 🚀
 `
 
-console.log(setupInstructions)
-
-// Create a README for the profile feature
+console.log(setupInstructions)
 fs.writeFileSync(path.join(process.cwd(), 'PROFILE_SETUP.md'), setupInstructions)
 console.log('📚 Created PROFILE_SETUP.md with detailed instructions')
 console.log('')

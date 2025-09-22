@@ -98,7 +98,6 @@ export function Footer() {
 				</div>
 			</div>
 
-			{/* Bottom border decoration */}
 			<div className="mt-8 pt-8 border-t border-border/50 w-full text-center">
 				<p className="text-muted-foreground text-xs">
 					Made with ❤️ for rural healthcare accessibility

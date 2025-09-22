@@ -70,11 +70,9 @@ export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
 
-  // Load user session and profile data
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        // Test Supabase connection first
         console.log("Profile page: Testing Supabase connection...")
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -112,7 +110,6 @@ export default function ProfilePage() {
         console.log("Profile page: Session found, user ID:", session.user.id)
         setSession(session)
 
-        // Check if user has a profile
         console.log("Profile page: Checking for existing profile...")
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
@@ -127,7 +124,6 @@ export default function ProfilePage() {
         }
 
         if (!profile) {
-          // New user - show onboarding
           console.log("Profile page: No profile found, showing onboarding")
           setShowOnboarding(true)
           setProfileData({
@@ -145,7 +141,6 @@ export default function ProfilePage() {
             language: "en"
           })
         } else {
-          // Existing user
           console.log("Profile page: Profile found, loading data:", profile.name)
           setProfileData(profile)
           
@@ -208,7 +203,6 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!session?.user?.id) return
 
-    // Validation
     if (!profileData.name?.trim()) {
       toast({
         title: "Validation Error",
@@ -229,7 +223,6 @@ export default function ProfilePage() {
 
     setSaving(true)
     try {
-      // Upload image if selected
       let avatarUrl = profileData.avatar_url
       if (selectedImage) {
         console.log("Uploading image:", selectedImage.name)
@@ -237,22 +230,20 @@ export default function ProfilePage() {
         const fileName = `${session.user.id}-${Date.now()}.${fileExt}`
         const filePath = `avatars/${fileName}`
 
-        // Try to upload to Supabase Storage with better error handling
         try {
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('profile-images')
             .upload(filePath, selectedImage, {
               cacheControl: '3600',
-              upsert: true // Allow overwriting
+              upsert: true 
             })
 
           if (uploadError) {
             console.error('Upload error:', uploadError)
-            
-            // If bucket doesn't exist, try to create it
+
             if (uploadError.message.includes('not found')) {
               console.log('Bucket not found, trying to create...')
-              // For now, fall back to using the image preview as base64
+
               avatarUrl = imagePreview || profileData.avatar_url
               toast({
                 title: "Image Upload Info",
@@ -263,7 +254,7 @@ export default function ProfilePage() {
               throw uploadError
             }
           } else {
-            // Get public URL
+
             const { data: { publicUrl } } = supabase.storage
               .from('profile-images')
               .getPublicUrl(filePath)
@@ -273,7 +264,7 @@ export default function ProfilePage() {
           }
         } catch (storageError) {
           console.error('Storage error:', storageError)
-          // Fall back to using preview image
+
           avatarUrl = imagePreview || profileData.avatar_url
           toast({
             title: "Image Upload Warning",
@@ -282,7 +273,7 @@ export default function ProfilePage() {
           })
         }
       } else if (imagePreview && !avatarUrl) {
-        // Use preview URL if no new file but preview exists
+
         avatarUrl = imagePreview
       }
 
@@ -326,8 +317,7 @@ export default function ProfilePage() {
       setShowOnboarding(false)
       calculateCompleteness(updateData)
 
-      // Trigger auth button refresh by updating the session
-      window.location.reload() // Simple way to refresh auth state
+      window.location.reload() 
 
       toast({
         title: "Success",
@@ -431,7 +421,7 @@ export default function ProfilePage() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        {/* Header */}
+        
         <div className="border-b bg-background/80 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
@@ -461,7 +451,7 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Profile Completeness Indicator */}
+        
         {profileCompleteness < 100 && (
           <Card className="mb-6 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30">
             <CardContent className="pt-6">
@@ -483,12 +473,11 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* Main Profile Card */}
         <Card className="overflow-hidden border-border bg-card">
           <div className="h-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
           
           <CardContent className="relative px-6 pb-6">
-            {/* Profile Picture */}
+            
             <div className="flex flex-col sm:flex-row sm:items-end gap-6 -mt-16 mb-6">
               <div className="relative">
                 <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
@@ -537,11 +526,10 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Profile Form/Display */}
             <div className="space-y-6">
               {(isEditing || isOnboarding) ? (
                 <>
-                  {/* Edit Mode */}
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name *</Label>
@@ -628,7 +616,7 @@ export default function ProfilePage() {
                         id="portfolio"
                         value={profileData.portfolio || ""}
                         onChange={(e) => handleInputChange("portfolio", e.target.value)}
-                        placeholder="https://yourwebsite.com"
+                        placeholder="https://your-website.com"
                       />
                     </div>
 
@@ -658,7 +646,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     {isOnboarding && (
                       <Button
@@ -681,7 +668,7 @@ export default function ProfilePage() {
                 </>
               ) : (
                 <>
-                  {/* Display Mode */}
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">

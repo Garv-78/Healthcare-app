@@ -19,8 +19,7 @@ export default function BookConsultationPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    supabase.from("doctors").select("id, profiles(name), specialty, languages").then(({ data }) => {
-      // @ts-ignore nested selects may return flat; keep simple for demo
+    supabase.from("doctors").select("id, profiles(name), specialty, languages").then(({ data }) => {
       setDoctors(data || [])
     })
   }, [])

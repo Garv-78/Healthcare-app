@@ -1,51 +1,32 @@
 #!/usr/bin/env node
-
-/**
- * CRITICAL BUG FIXES TEST SCRIPT
- * 
- * Testing the two critical issues:
- * 1. "Setup Failed" - Profile creation error due to missing 'address' column
- * 2. "Sign out not working" - User unable to properly sign out
- */
-
 const fs = require('fs')
 const path = require('path')
 
 console.log('🚨 CRITICAL BUG FIXES VALIDATION\n')
 
 let criticalFixes = []
-let remainingIssues = []
-
-// Test 1: Check if address column issue is fixed
+let remainingIssues = []
 console.log('🔧 Testing Profile Creation Fix...')
 try {
   const onboardingUtils = fs.readFileSync(
     path.join(__dirname, 'lib/supabase/onboarding-utils.ts'), 
     'utf8'
-  )
-  
-  // Check if we're only using safe database fields
+  )
   if (!onboardingUtils.includes('address: profileData.address')) {
     criticalFixes.push('✅ Removed problematic address field from profile creation')
   } else {
     remainingIssues.push('❌ Still trying to use non-existent address field')
-  }
-  
-  // Check if we have defensive error handling
+  }
   if (onboardingUtils.includes('onboarding_completed = false') && onboardingUtils.includes('try {')) {
     criticalFixes.push('✅ Added defensive error handling for optional onboarding fields')
-  }
-  
-  // Check if we're using only core schema fields
+  }
   if (onboardingUtils.includes('id: user.id') && onboardingUtils.includes('name: profileData.name')) {
     criticalFixes.push('✅ Using only core schema fields (id, name, phone, role, language)')
   }
 
 } catch (e) {
   remainingIssues.push(`❌ Could not validate onboarding utils: ${e.message}`)
-}
-
-// Test 2: Check if onboarding form handles database errors gracefully
+}
 console.log('🔧 Testing Onboarding Form Error Handling...')
 try {
   const onboardingForm = fs.readFileSync(
@@ -67,9 +48,7 @@ try {
 
 } catch (e) {
   remainingIssues.push(`❌ Could not validate onboarding form: ${e.message}`)
-}
-
-// Test 3: Check if sign-out is bulletproof now
+}
 console.log('🔧 Testing Bulletproof Sign-out...')
 try {
   const authButton = fs.readFileSync(
@@ -99,9 +78,7 @@ try {
 
 } catch (e) {
   remainingIssues.push(`❌ Could not validate auth button: ${e.message}`)
-}
-
-// Test 4: Check database schema compatibility
+}
 console.log('🔧 Testing Database Schema Compatibility...')
 try {
   const schema = fs.readFileSync(path.join(__dirname, 'supabase/schema.sql'), 'utf8')
@@ -122,9 +99,7 @@ try {
   
 } catch (e) {
   remainingIssues.push(`❌ Could not validate database schema: ${e.message}`)
-}
-
-// RESULTS
+}
 console.log('\n🎯 CRITICAL FIXES SUMMARY')
 console.log('=' * 50)
 console.log(`✅ Critical fixes applied: ${criticalFixes.length}`)

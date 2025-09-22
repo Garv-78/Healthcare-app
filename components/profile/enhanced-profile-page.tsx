@@ -88,7 +88,6 @@ export default function EnhancedProfilePage() {
 
   const profileImage = previewUrl || profileData.avatar_url || "/placeholder-user.jpg"
 
-  // Load profile data and check onboarding status
   useEffect(() => {
     const loadProfile = async () => {
       setLoading(true)
@@ -97,11 +96,11 @@ export default function EnhancedProfilePage() {
         setSession(session)
         
         if (session?.user?.id) {
-          // Check onboarding status first
+
           const onboardingStatus = await checkOnboardingStatus(session.user)
           
           if (onboardingStatus.isFirstTime && !onboardingStatus.hasProfile) {
-            // First-time user - show onboarding form
+
             setShowOnboarding(true)
             setLoading(false)
             return
@@ -114,7 +113,7 @@ export default function EnhancedProfilePage() {
             .single()
 
           if (profile && !error) {
-            // Existing user with profile - load their data and show profile view
+
             const loadedData: ProfileData = {
               id: profile.id,
               name: profile.name || session.user.user_metadata?.full_name || "",
@@ -133,15 +132,14 @@ export default function EnhancedProfilePage() {
             }
             setProfileData(loadedData)
             setAboutValue(loadedData.about)
-            
-            // Check if user needs to complete onboarding
+
             if (!onboardingStatus.onboardingCompleted) {
-              setIsEditing(true) // Show in editing mode for completion
+              setIsEditing(true) 
             } else {
-              setIsEditing(false) // Show profile view
+              setIsEditing(false) 
             }
           } else if (session?.user) {
-            // User has session but no profile - show editing mode
+
             setIsEditing(true)
             const initialData: ProfileData = {
               name: session.user.user_metadata?.full_name || "",
@@ -172,12 +170,12 @@ export default function EnhancedProfilePage() {
   }, [])
 
   const handleCancel = () => {
-    // Cancel should redirect to homepage
+
     router.push('/')
   }
 
   const handleSave = async () => {
-    // Validation before saving
+
     if (!profileData.name.trim()) {
       toast({
         title: "Validation Error",
@@ -196,7 +194,6 @@ export default function EnhancedProfilePage() {
       return
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(profileData.email)) {
       toast({
@@ -213,7 +210,6 @@ export default function EnhancedProfilePage() {
         throw new Error("User session not found")
       }
 
-      // Create clean data object with only the fields we're sure exist
       const updateData = {
         id: session.user.id,
         name: profileData.name,
@@ -248,33 +244,28 @@ export default function EnhancedProfilePage() {
 
       console.log('Profile save successful:', data)
 
-      // Update local state
       setProfileData(prev => ({
         ...prev,
         ...updateData,
         about: aboutText,
         avatar_url: previewUrl || profileData.avatar_url,
       }))
-      
-      // Show success feedback
+
       toast({
         title: "Profile Updated",
         description: "Your profile has been saved successfully",
       })
-      
-      // After save, redirect to profile view (not editing mode)
+
       setIsEditing(false)
     } catch (error) {
       console.error("Error saving profile:", error)
-      
-      // More detailed error message
+
       let errorMessage = "Failed to save profile. Please try again."
       
       if (error instanceof Error) {
         errorMessage = error.message
       }
-      
-      // Show error feedback
+
       toast({
         title: "Save Failed",
         description: errorMessage,
@@ -292,7 +283,7 @@ export default function EnhancedProfilePage() {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false)
     setIsEditing(false)
-    // Reload the profile page to show the updated profile
+
     window.location.reload()
   }
 
@@ -322,14 +313,13 @@ export default function EnhancedProfilePage() {
     )
   }
 
-  // Show onboarding form for first-time users
   if (showOnboarding && session.user) {
     return <OnboardingForm user={session.user} onComplete={handleOnboardingComplete} />
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
@@ -345,18 +335,17 @@ export default function EnhancedProfilePage() {
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Profile Card */}
+        
         <Card className="w-full">
           <CardHeader className="relative">
-            {/* Background Gradient */}
+            
             <div
               className="absolute inset-0 h-36 rounded-t-lg"
               style={{
                 background: "radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%)",
               }}
             />
-            
-            {/* Profile Picture */}
+
             <div className="relative -mb-12 flex justify-center pt-20">
               <div className="relative">
                 <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
@@ -388,7 +377,7 @@ export default function EnhancedProfilePage() {
           </CardHeader>
 
           <CardContent className="pt-16 space-y-6">
-            {/* Basic Info Display */}
+            
             {!isEditing ? (
               <div className="space-y-6">
                 <div className="text-center space-y-2">
@@ -453,7 +442,6 @@ export default function EnhancedProfilePage() {
                 </div>
               </div>
             ) : (
-              /* Edit Form */
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex-1 space-y-1.5">
@@ -547,7 +535,7 @@ export default function EnhancedProfilePage() {
                     <Label htmlFor={`${id}-portfolio`}>Portfolio/Website</Label>
                     <Input
                       id={`${id}-portfolio`}
-                      placeholder="https://yourwebsite.com"
+                      placeholder="https://your-website.com"
                       value={profileData.portfolio}
                       onChange={(e) => handleInputChange("portfolio", e.target.value)}
                     />
@@ -578,7 +566,6 @@ export default function EnhancedProfilePage() {
                   </p>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <Button
                     variant="outline"

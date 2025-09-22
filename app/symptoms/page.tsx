@@ -155,9 +155,8 @@ export default function SymptomsPage() {
   const performAssessment = () => {
     setIsAssessing(true)
 
-    // Simulate AI processing
     setTimeout(() => {
-      // Mock assessment based on answers
+
       const primarySymptom = answers.primary_symptom
       const severity = Number.parseInt(answers.severity) || 5
       const additionalSymptoms = answers.additional_symptoms || []
@@ -263,7 +262,7 @@ export default function SymptomsPage() {
   if (assessment) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Header */}
+        
         <header className="border-b border-border bg-card">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center space-x-4">
@@ -283,7 +282,7 @@ export default function SymptomsPage() {
 
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Assessment Result */}
+            
             <Card
               className={`border-l-4 ${
                 assessment.urgency === "emergency"
@@ -351,7 +350,6 @@ export default function SymptomsPage() {
               </CardContent>
             </Card>
 
-            {/* Action Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="pt-6">
@@ -399,7 +397,6 @@ export default function SymptomsPage() {
               </Card>
             </div>
 
-            {/* Emergency Contact */}
             {assessment.urgency === "emergency" && (
               <Card className="bg-red-50 border-red-200">
                 <CardContent className="pt-6">
@@ -431,7 +428,6 @@ export default function SymptomsPage() {
               </Card>
             )}
 
-            {/* Disclaimer */}
             <Card className="bg-muted/30">
               <CardContent className="pt-6">
                 <div className="text-center space-y-2">
@@ -454,7 +450,7 @@ export default function SymptomsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center space-x-4">
@@ -474,7 +470,7 @@ export default function SymptomsPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          {/* Progress */}
+          
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">
@@ -485,14 +481,13 @@ export default function SymptomsPage() {
             <Progress value={progress} className="w-full" />
           </div>
 
-          {/* Question Card */}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">{currentQuestion.question}</CardTitle>
               {currentQuestion.required && <CardDescription>This question is required</CardDescription>}
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Multiple Choice */}
+              
               {currentQuestion.type === "multiple-choice" && (
                 <RadioGroup
                   value={answers[currentQuestion.id] || ""}
@@ -509,7 +504,6 @@ export default function SymptomsPage() {
                 </RadioGroup>
               )}
 
-              {/* Checkbox */}
               {currentQuestion.type === "checkbox" && (
                 <div className="space-y-3">
                   {currentQuestion.options?.map((option) => (
@@ -537,7 +531,6 @@ export default function SymptomsPage() {
                 </div>
               )}
 
-              {/* Text Input */}
               {currentQuestion.type === "text" && (
                 <Textarea
                   placeholder="Please provide details..."
@@ -547,7 +540,6 @@ export default function SymptomsPage() {
                 />
               )}
 
-              {/* Scale */}
               {currentQuestion.type === "scale" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -572,7 +564,6 @@ export default function SymptomsPage() {
             </CardContent>
           </Card>
 
-          {/* Navigation */}
           <div className="flex items-center justify-between mt-8">
             <Button variant="outline" onClick={prevStep} disabled={currentStep === 0} className="bg-transparent">
               <ChevronLeft className="w-4 h-4 mr-2" />

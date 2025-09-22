@@ -1,6 +1,4 @@
-import { createSupabaseBrowserClient } from './client'
-
-// Test function to check session status
+import { createSupabaseBrowserClient } from './client'
 export async function testSessionStatus() {
   const supabase = createSupabaseBrowserClient()
   
@@ -17,19 +15,13 @@ export async function testSessionStatus() {
     console.error('Session check failed:', err)
     return { session: null, error: err }
   }
-}
-
-// Function to test logout functionality
+}
 export async function testLogout() {
-  console.log('=== Testing Logout Functionality ===')
-  
-  // Check session before logout
+  console.log('=== Testing Logout Functionality ===')
   console.log('Before logout:')
   await testSessionStatus()
   
-  const supabase = createSupabaseBrowserClient()
-  
-  // Perform logout
+  const supabase = createSupabaseBrowserClient()
   console.log('Performing logout...')
   const { error } = await supabase.auth.signOut({ scope: 'global' })
   
@@ -37,16 +29,12 @@ export async function testLogout() {
     console.error('Logout error:', error)
   } else {
     console.log('Logout successful')
-  }
-  
-  // Check session after logout
+  }
   setTimeout(async () => {
     console.log('After logout:')
     await testSessionStatus()
   }, 1000)
-}
-
-// Add to window for debugging in browser console (development mode only)
+}
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).testSessionStatus = testSessionStatus;
   (window as any).testLogout = testLogout;

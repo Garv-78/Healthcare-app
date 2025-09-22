@@ -10,8 +10,7 @@ export async function checkUserProfileStatus(userId: string) {
       .eq("id", userId)
       .single()
 
-    if (error && error.code === 'PGRST116') {
-      // No profile found - new user
+    if (error && error.code === 'PGRST116') {
       return { hasProfile: false, isComplete: false, profile: null }
     }
     
@@ -22,9 +21,7 @@ export async function checkUserProfileStatus(userId: string) {
     
     if (!profile) {
       return { hasProfile: false, isComplete: false, profile: null }
-    }
-    
-    // Check if profile has essential information
+    }
     const hasEssentialInfo = !!(profile.name && profile.role)
     
     return { 
@@ -41,11 +38,8 @@ export async function checkUserProfileStatus(userId: string) {
 export async function getPostLoginRedirect(userId: string): Promise<string> {
   const status = await checkUserProfileStatus(userId)
   
-  if (!status.hasProfile || !status.isComplete) {
-    // New user or incomplete profile - go to profile page
+  if (!status.hasProfile || !status.isComplete) {
     return '/profile'
-  }
-  
-  // Existing user with complete profile - go to homepage
+  }
   return '/'
 }

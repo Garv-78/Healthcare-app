@@ -24,12 +24,9 @@ export async function middleware(request: NextRequest) {
         },
       },
     }
-  )
-
-  // Only check session for auth-specific paths to avoid unnecessary redirects
+  )
   if (request.nextUrl.pathname.startsWith('/login')) {
-    try {
-      // Check if user is forcing access to login page or coming from homepage register
+    try {
       const force = request.nextUrl.searchParams.get('force')
       const mode = request.nextUrl.searchParams.get('mode')
       
@@ -38,15 +35,12 @@ export async function middleware(request: NextRequest) {
         return response
       }
 
-      const { data: { session }, error } = await supabase.auth.getSession()
-      
-      // Only redirect if we have a confirmed valid session and user is not explicitly trying to register
+      const { data: { session }, error } = await supabase.auth.getSession()
       if (session?.user && !error) {
         console.log('Middleware: Redirecting authenticated user away from login')
         return NextResponse.redirect(new URL('/', request.url))
       }
-    } catch (error) {
-      // If there's an error checking session, let the request proceed
+    } catch (error) {
       console.error('Middleware session check error:', error)
     }
   }
@@ -56,13 +50,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public files)
-     */
     '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 }

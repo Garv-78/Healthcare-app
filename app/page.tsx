@@ -59,7 +59,6 @@ export default function HomePage() {
     })
   }, [router])
 
-  // Check authentication state with improved error handling
   useEffect(() => {
     let isMounted = true
     
@@ -115,13 +114,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Decorative background */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 left-1/2 h-64 w-[120vw] -translate-x-1/2 rounded-full bg-gradient-to-r from-primary/25 via-fuchsia-500/10 to-cyan-400/20 blur-3xl" />
         <div className="absolute bottom-0 right-0 h-60 w-60 rounded-full bg-primary/10 blur-2xl" />
       </div>
 
-      {/* Header */}
       <header className="border-b border-border/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -149,7 +146,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="relative overflow-hidden">        
         <div className="container mx-auto px-4 py-14 md:py-20 relative z-10">
           <div className="grid items-center gap-10 md:grid-cols-2">
@@ -224,7 +220,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Role-based CTAs */}
       <section id="patients" className="px-4 py-8">
         <div className="container mx-auto">
           <div className="grid gap-6 md:grid-cols-2">
@@ -273,11 +268,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Main Services Grid */}
       <section id="features" className="py-8 px-4 relative">        
         <div className="container mx-auto relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Video Consultation */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader className="text-center">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -296,7 +289,6 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            {/* Health Records */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader className="text-center">
                 <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -315,7 +307,6 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            {/* Medicine Tracker */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader className="text-center">
                 <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -334,7 +325,6 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            {/* AI Symptom Checker */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader className="text-center">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -356,7 +346,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How it works */}
       <section id="how-it-works" className="px-4 py-12 bg-muted/30">
         <div className="container mx-auto">
           <h3 className="mb-8 text-center text-2xl font-bold">How HealthConnect works</h3>
@@ -401,7 +390,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Quick Stats */}
       <section className="py-8 px-4 bg-muted/30">
         <div className="container mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -425,7 +413,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
       <section className="px-4 py-12 relative">        
         <div className="container mx-auto relative z-10">
           <h3 className="mb-8 text-center text-2xl font-bold">What people say</h3>
@@ -473,7 +460,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Security */}
       <section className="px-4 py-12 bg-muted/30">
         <div className="container mx-auto">
           <div className="grid items-center gap-8 md:grid-cols-2">
@@ -499,7 +485,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Emergency Contact */}
       <section className="py-8 px-4 relative">        
         <div className="container mx-auto relative z-10">
           <Card className="bg-destructive/5 border-destructive/20">
@@ -516,7 +501,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Bottom fade effect for elegant scroll transition */}
       <div className="relative">
         <GradualBlur 
           strength={1.5} 
@@ -527,7 +511,6 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   )

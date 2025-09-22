@@ -28,7 +28,6 @@ export default function HealthRecordsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showSensitiveInfo, setShowSensitiveInfo] = useState(false)
 
-  // Mock health records data
   const consultationRecords = [
     {
       id: "1",
@@ -142,7 +141,7 @@ export default function HealthRecordsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center space-x-4">
@@ -162,7 +161,7 @@ export default function HealthRecordsPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          {/* Patient Info Card */}
+          
           <Card className="mb-8">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -200,7 +199,6 @@ export default function HealthRecordsPage() {
             </CardHeader>
           </Card>
 
-          {/* Search Bar */}
           <div className="mb-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -213,7 +211,6 @@ export default function HealthRecordsPage() {
             </div>
           </div>
 
-          {/* Records Tabs */}
           <Tabs defaultValue="consultations" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="consultations" className="flex items-center space-x-2">
@@ -234,7 +231,6 @@ export default function HealthRecordsPage() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Consultations Tab */}
             <TabsContent value="consultations" className="space-y-4">
               {filteredConsultations.map((record) => (
                 <Card key={record.id}>
@@ -281,7 +277,6 @@ export default function HealthRecordsPage() {
               ))}
             </TabsContent>
 
-            {/* Lab Results Tab */}
             <TabsContent value="lab-results" className="space-y-4">
               {labResults.map((result) => (
                 <Card key={result.id}>
@@ -332,7 +327,6 @@ export default function HealthRecordsPage() {
               ))}
             </TabsContent>
 
-            {/* Prescriptions Tab */}
             <TabsContent value="prescriptions" className="space-y-4">
               {prescriptions.map((prescription) => (
                 <Card key={prescription.id}>
@@ -377,7 +371,6 @@ export default function HealthRecordsPage() {
               ))}
             </TabsContent>
 
-            {/* Vital Signs Tab */}
             <TabsContent value="vitals" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {vitalSigns.map((vital, index) => (
