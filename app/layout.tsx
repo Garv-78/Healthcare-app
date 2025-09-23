@@ -10,9 +10,9 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Healthcare Webapp',
+  description: 'Complete telemedicine platform for online consultations, medical records, and healthcare services',
+  generator: 'Next.js',
 }
 
 export default function RootLayout({
